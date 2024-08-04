@@ -6,6 +6,8 @@ You'll learn how to leverage infrastructure as code principles to create consist
 
 [Link to slides presented](https://docs.google.com/presentation/d/16QZhyyeSVlAqNl6Lin2Es68pUtSRrxMj/edit?usp=drive_link&ouid=113544216782604326804&rtpof=true&sd=true)
 
+![](./DC32_C2_Infrastructure.png)
+
 ## Session goals
 
 - Understand the components of a C2 infrastructure and how they work together
@@ -24,7 +26,7 @@ You'll learn how to leverage infrastructure as code principles to create consist
   - Redirection through VPN interface
   - C2 server has all ingress access restricted after configuring
 - Scalability
-  - Use of `count` attribute in Terraform allowing us
+  - Use of `count` attribute in Terraform allowing us to deploy multiple EC2 instances of each resource compatible with this method
 
 ## Requirements
 
