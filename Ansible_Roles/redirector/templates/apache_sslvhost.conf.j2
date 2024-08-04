@@ -1,0 +1,110 @@
+<VirtualHost *:{{ item.https_port }}>
+
+# Include <REDIRECTOR_DOMAIN>. This is the frontend domain the C2 Implant will send traffic to and points to the Redirector IP.
+
+ServerName {{ item.redirector_domain }}
+DocumentRoot /var/www/html/{{ item.redirector_domain }}
+# https://httpd.apache.org/docs/2.4/mod/core.html#loglevel
+LogLevel alert rewrite:trace6
+
+# Allow Directory Listing
+
+# <Directory /var/www/html>
+        # Options Indexes FollowSymLinks
+        # AllowOverride All
+        # Require all granted
+# </Directory>
+
+<Directory /var/www/{{ item.redirector_domain }}/logs>
+        Order deny,allow
+        Deny from all
+</Directory>
+
+<IfModule mod_headers.c>
+        Header set Cache-Control "no-store, no-cache, proxy-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+</IfModule>
+
+# Define Redirect Target
+DEFINE REDIR_TARGET {{ item.decoy_domain }}
+# Enable SSL engine for secure connections
+SSLEngine On
+# Set the path to the SSL certificate file
+SSLCertificateFile /etc/letsencrypt/live/{{ item.redirector_domain }}/cert.pem
+# Set the path to the SSL certificate key file
+SSLCertificateKeyFile /etc/letsencrypt/live/{{ item.redirector_domain }}/privkey.pem
+# Set the path to the SSL certificate chain file
+SSLCertificateChainFile /etc/letsencrypt/live/{{ item.redirector_domain }}/fullchain.pem
+# Enable SSL proxy engine for secure proxy connections
+SSLProxyEngine On
+# Disable verification of the SSL certificate on the proxy
+SSLProxyVerify none
+# Disable checking of the Common Name (CN) field in the peer certificate on the proxy
+SSLProxyCheckPeerCN off
+# Disable checking of the peer certificate's name on the proxy
+SSLProxyCheckPeerName off
+# Disable checking of the expiration date of the peer certificate on the proxy
+SSLProxyCheckPeerExpire off
+# Ensure "snakeoil" certs/key are commented in Apache Server configuration. Otherwise, the server will use self-signed certificate.
+# SSLCertificateFile /etc/ssl/certs/ssl-cert-snakeoil.pem
+# SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
+# Set the path for Apache error logs
+ErrorLog /var/www/html/{{ item.redirector_domain }}/logs/error.log
+# Set the path for Apache access logs and use the 'combined' log format
+CustomLog /var/www/html/{{ item.redirector_domain }}/logs/access.log combined
+# Reverse Proxy (Redirector) preserves the original "Host" header from the client's request and sends it to the backend server
+ProxyPreserveHost On
+# Enable or disable the Apache URL rewriting engine
+RewriteEngine On
+
+# https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html
+# RewriteRule: If the request contains "/<URI_PATH_C2_TRAFFIC>/", redirect to C2 VPN IPs. If it does not contain the "/<URI_PATH_C2_TRAFFIC>/", traffic will match the RewriteRule for <DECOY_DOMAIN>.<TLD>.
+Include /etc/apache2/redirect.rules
+
+# Custom Header Check
+RewriteCond %{HTTP:Hacker-Hermanos-Rocks} ^$
+RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
+
+# For most configuration files from conf-available/, which are
+# enabled or disabled at a global level, it is possible to
+# include a line for only one particular virtual host. For example the
+# following line enables the CGI configuration for this host only
+# after it has been globally disabled with "a2disconf".
+# Include conf-available/serve-cgi-bin.conf
+
+{% if item.config_files is defined %}
+{% for config_file in item.config_files %}
+{{ lookup('file', config_file) }} 
+{% endfor %}
+{% endif %}
+
+{% if item.pre_configs is defined %}
+{% for config in item.pre_configs %}
+{{ config}}
+{% endfor %}
+{% endif %}
+# https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html#rewritecond
+{% if item.c2filters is defined %}
+{% for c in item.c2filters %}
+RewriteCond %{REQUEST_URI} {{ c.rewritefilter }}
+RewriteRule ^(.*)$ %{REQUEST_SCHEME}://{{ c.backend_teamserver }}%{REQUEST_URI} [P,NE,L]
+ProxyPassReverse ^ %{REQUEST_SCHEME}://{{ c.backend_teamserver }}%{REQUEST_URI} [P,NE]
+{% endfor %}
+{% endif %}
+
+# If the above rules don't match send to <DECOY_DOMAIN>.<TLD> (e.g. hackerhermanos.com or google.com)
+RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
+
+# Security Headers
+
+Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+Header always set X-XSS-Protection "1; mode=block"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set X-Content-Type-Options "nosniff"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header set Content-Type "text/html; charset=utf-8"
+
+
+</Virtualhost>

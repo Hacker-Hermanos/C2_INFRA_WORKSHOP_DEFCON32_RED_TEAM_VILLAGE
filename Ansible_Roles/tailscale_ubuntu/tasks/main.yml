@@ -1,0 +1,170 @@
+---
+# tasks file for tailscale
+# Validate if Tailscale is already installed with `tailscale -v`
+- name: Validate tailscale is installed
+  ansible.builtin.command: tailscale version
+  register: tailscale_exists
+  failed_when: tailscale_exists.rc|int != 0
+  changed_when: tailscale_exists.rc != 0 # <- Uses the return code to define when the task has changed.
+  ignore_errors: true
+# Adds the Tailscale package signing key into `/usr/share/keyrings/` and ubuntu focal repository -
+# (cont.) into `/etc/apt/sources.list.d/tailscale.list` if it is not installed using `curl` and `tee`
+# - name: Add Tailscale package signing key and repository if it is not installed
+#   when: tailscale_exists is failed
+#   ansible.builtin.shell: >
+#     curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.noarmor.gpg |
+#     sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null ;
+#     curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.tailscale-keyring.list |
+#     sudo tee /etc/apt/sources.list.d/tailscale.list
+#   register: repo_and_signing_key_installed
+#   failed_when: repo_and_signing_key_installed.rc|int != 0
+#   changed_when: repo_and_signing_key_installed.rc != 0 # <- Uses the return code to define when the task has changed.
+#   tags:
+#     - tailscale
+#   become: true
+#  If it already exsits, removes the existing Tailscale package using `apt`
+- name: Add Tailscale package signing key if Tailscale is not installed
+  become: true
+  ansible.builtin.get_url:
+    url: https://pkgs.tailscale.com/stable/ubuntu/focal.noarmor.gpg
+    dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+    mode: '0644'
+  when: tailscale_exists is failed
+  register: signing_key_installed
+  failed_when: signing_key_installed is failed
+  changed_when: signing_key_installed is changed
+  tags:
+    - tailscale
+
+- name: Add Tailscale repository if Tailscale is not installed
+  become: true
+  ansible.builtin.get_url:
+    url: https://pkgs.tailscale.com/stable/ubuntu/focal.tailscale-keyring.list
+    dest: /etc/apt/sources.list.d/tailscale.list
+    mode: '0644'
+  when: tailscale_exists is failed
+  register: repo_installed
+  failed_when: repo_installed is failed
+  changed_when: repo_installed is changed
+  tags:
+    - tailscale
+
+- name: Loop through pre-requisite packages removal prior to fresh install
+#  when: tailscale_exists is failed
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    pkg: "{{ item }}"
+  loop:
+    - tailscale
+  register: tailscale_package_removed
+  failed_when: tailscale_package_removed is failed
+  changed_when: tailscale_package_removed is changed
+  ignore_errors: true
+# Validates that the package was uninstalled successfully
+- name: Loop through pre-requisite packages removal validation prior to fresh install
+  become: true
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: absent
+  register: tailscale_is_not_installed
+  loop:
+    - tailscale
+  ignore_errors: true
+#    - ansible.builtin.debug:
+#            var: tailscale_is_not_installed
+# Disables automatic start and stops any running Tailscale daemon/service using `systemctl`/`systemd`
+- name: Disable and stop tailscale daemon/service
+  when: tailscale_exists is failed
+  ansible.builtin.systemd:
+    name: tailscaled
+    enabled: false
+    state: stopped
+
+#    - name: Check if tailscale is up
+#      ansible.builtin.command: tailscale status
+#      register: status
+#      failed_when: status.rc|int < 2
+#      changed_when: false
+#    - name: Ensure machine is not connected to tailscale
+#      ansible.builtin.command: "sudo tailscale logout"
+#      failed_when: false
+#      ignore_errors: false
+#      no_log: true
+#      when:
+#        - status.rc|int != 0
+#      become: true
+#      register: tailscale_is_not_connected
+
+# Installs Taiscale using `apt`
+- name: Loop through pre-requisite packages installation
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    pkg: "{{ item }}"
+  loop:
+    - tailscale
+# Validates that the package was installed successfully
+- name: Loop through pre-requisite packages validation
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: latest
+  register: tailscale_installed
+  loop:
+    - tailscale
+# Enables Tailscale daemon/service automatic start using `systemctl`/`systemd`
+- name: Enable tailscaled
+  become: true
+  ansible.builtin.systemd:
+    name: tailscaled
+    enabled: true
+    state: started
+# Validates Tailscale Authentication Key checking that the `tailscale_authkey` is defined and it has a character length of "30" and saves the result of the-
+# (cont.) validation to `authorization` using `register`
+- name: Validate tailscale_authkey
+  ansible.builtin.assert:
+    that:
+      - tailscale_authkey is defined
+      - "{{ tailscale_authkey | length }} >= 30"
+    quiet: false
+    success_msg: 'TAILSCALE_AUTHKEY is valid'
+  register: authorization
+  ignore_errors: true
+
+# Validates if Tailscale network is up with `tailscale status` and saves the result to `status` using `register`
+- name: Check if tailscale is up
+  ansible.builtin.command: tailscale status
+  register: status
+  failed_when: status.rc|int > 1
+  changed_when: false
+# Connects the machine that the role is being ran for to the Tailscale's VPN `tailnet` using `tailscale up -authkey {{ tailscale_authkey }}`
+- name: Connect machine to tailscale
+  ansible.builtin.command: "sudo tailscale up -authkey {{ tailscale_authkey }}" # "sudo tailscale up --authkey keystring"
+  no_log: true # Protect auth key for VPN
+  when:
+    - status.rc|int != 0
+    - not authorization.failed
+  become: true
+  register: tailscale_node
+  changed_when: tailscale_node.rc|int == 0
+# Checks the machine tailnet's IPv4 with `tailscale ip` and saves it to `ip_check` using `register`
+- name: Check ip address
+  ansible.builtin.command: tailscale ip
+  register: ip_check
+  failed_when: false
+  changed_when: false
+# Saves the machine tailnet's IPv4 to `tailscale_ip` using `set_fact` and outputting the value of the `ip_check` saved in the previous step
+- name: Set tailscale_ip fact
+  when: ip_check.rc|int == 0
+  ansible.builtin.set_fact:
+    tailscale_ip: "{{ ip_check.stdout_lines[0] }}"
+# Checks the status of tailscaled and its connections and saves it to `status_check`
+- name: Check status
+  ansible.builtin.command: tailscale status
+  changed_when: false
+  failed_when: status.rc|int > 1
+  register: status_check
+# Outputs the value `status_check` to the console
+- name: Output this machine's tailscale IP
+  ansible.builtin.debug:
+    msg: "{{ status_check.stdout_lines }}"

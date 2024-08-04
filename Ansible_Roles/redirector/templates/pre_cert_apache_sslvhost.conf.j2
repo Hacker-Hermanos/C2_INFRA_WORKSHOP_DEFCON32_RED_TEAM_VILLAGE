@@ -1,0 +1,56 @@
+<VirtualHost *:{{ item.https_port }}>
+
+# Include <REDIRECTOR_DOMAIN>. This is the frontend domain the C2 Implant will send traffic to and points to the Redirector IP.
+
+ServerName {{ item.redirector_domain }}
+DocumentRoot /var/www/html/{{ item.redirector_domain }}
+
+# Allow Directory Listing
+
+# <Directory /var/www/html>
+# Options Indexes FollowSymLinks
+# AllowOverride All
+# Require all granted
+# </Directory>
+
+<IfModule mod_headers.c>
+        Header set Cache-Control "no-store, no-cache, proxy-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+</IfModule>
+
+# Enable SSL engine for secure connections
+SSLEngine On
+
+# Enable SSL proxy engine for secure proxy connections
+SSLProxyEngine On
+
+# Disable verification of the SSL certificate on the proxy
+SSLProxyVerify none
+
+# Disable checking of the Common Name (CN) field in the peer certificate on the proxy
+SSLProxyCheckPeerCN off
+
+# Disable checking of the peer certificate's name on the proxy
+SSLProxyCheckPeerName off
+
+# Disable checking of the expiration date of the peer certificate on the proxy
+SSLProxyCheckPeerExpire off
+
+# Ensure "snakeoil" certs/key are commented in Apache Server configuration. Otherwise, the server will use self-signed certificate.
+
+SSLCertificateFile /etc/ssl/certs/ssl-cert-snakeoil.pem
+SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
+
+# Set the path for Apache error logs
+ErrorLog /var/www/html/{{ item.redirector_domain }}/error.log
+
+# Set the path for Apache access logs and use the 'combined' log format
+CustomLog /var/www/html/{{ item.redirector_domain }}/access.log combined
+
+# Reverse Proxy (Redirector) preserves the original "Host" header from the client's request and sends it to the backend server
+ProxyPreserveHost On
+# Enable or disable the Apache URL rewriting engine
+RewriteEngine On
+
+</Virtualhost>

@@ -1,0 +1,61 @@
+---
+# tasks file for sliver_kali
+
+- name: Loop through expect and pre-requisite packages Installation
+  ansible.builtin.apt:
+    update_cache: true
+    pkg: "{{ item }}"
+  loop:
+    - gpg
+    - build-essential
+    - mingw-w64
+    - binutils-mingw-w64
+    - g++-mingw-w64
+    - sliver
+    - net-tools
+  become: true
+  become_user: root
+
+# Validate expect installation
+
+- name: Loop through expect and pre-requisite packages validation
+  ansible.builtin.apt:
+    pkg: "{{ item }}"
+    state: latest
+  loop:
+    - gpg
+    - build-essential
+    - mingw-w64
+    - binutils-mingw-w64
+    - g++-mingw-w64
+    - sliver
+    - net-tools
+  become: true
+  become_user: root
+
+#- name: Download the script
+#  ansible.builtin.get_url:
+#    url: https://sliver.sh/install
+#    dest: /tmp/sliver_install.sh
+#    mode: '0755'  # Set executable permissions on the downloaded script
+#- name: Execute the script with sudo using bash
+#  ansible.builtin.shell: "/bin/bash /tmp/sliver_install.sh"
+#  become: true
+#  become_user: root
+#  register: sliver_install
+#  failed_when: sliver_install  .rc != 0
+#  changed_when: false  # Set changed status to false to avoid changing anything
+
+- name: Check sliver-client was installed
+  ansible.builtin.command: "sliver-client version"
+  register: sliver_client_version_check
+  ignore_errors: true  # Ignore errors since we'll check the return code later
+  failed_when: sliver_client_version_check.rc != 0
+  changed_when: false  # Set changed status to false to avoid changing anything
+
+- name: Check sliver-server was installed
+  ansible.builtin.command: "sliver-server version"
+  register: sliver_server_version_check
+  ignore_errors: true  # Ignore errors since we'll check the return code later
+  failed_when: sliver_server_version_check.rc != 0
+  changed_when: false  # Set changed status to false to avoid changing anything

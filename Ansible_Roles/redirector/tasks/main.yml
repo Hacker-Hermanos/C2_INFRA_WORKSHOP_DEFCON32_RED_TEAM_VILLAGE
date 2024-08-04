@@ -1,0 +1,7 @@
+---
+- name: Configure Apache2 via Ansible Role
+  ansible.builtin.import_tasks: "apache.yml"
+- name: Configure Apache2 via Ansible Role
+  ansible.builtin.import_tasks: "letsencrypt.yml"
+- name: Configure Apache2 vhosts files after certificate is provisioned
+  ansible.builtin.import_tasks: "update_vhosts.yml"

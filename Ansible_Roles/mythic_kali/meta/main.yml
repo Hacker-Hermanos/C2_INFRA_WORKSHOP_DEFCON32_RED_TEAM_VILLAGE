@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  role_name: mythic_kali
+  description: Installs Mythic C2 TeamServer
+  company: www.hackerhermanos.com
+  namespace: pr0b3r7
+  author: Robert Pimentel - www.linkedin.com/in/pimentelrobert1
+  issue_tracker_url: https://github.com/pr0b3r7/DEFCON32_RT_Village_workshop/issues
+  license: MIT
+  min_ansible_version: "2.1"
+  platforms:
+    - name: Kali
+      versions:
+        - 6.1.0-kali5-amd64
+  galaxy_tags:
+    - mythic
+    - c2

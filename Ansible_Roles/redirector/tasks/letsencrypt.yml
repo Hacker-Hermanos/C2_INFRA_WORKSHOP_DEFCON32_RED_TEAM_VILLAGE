@@ -1,0 +1,112 @@
+---
+- name: Install letsencrypt
+  ansible.builtin.apt:
+    name: letsencrypt
+    state: present
+    update_cache: true
+
+- name: Install Certbot
+  ansible.builtin.apt:
+    name: "certbot"
+    state: present
+    update_cache: true
+
+- name: Delete previous Apache configurations if any
+  ansible.builtin.command: |
+    rm -rfv /etc/apache2/sites-available/rt*
+  register: deleted_http_sites
+  ignore_errors: true
+  changed_when: deleted_http_sites.rc == 0
+  failed_when: deleted_http_sites.rc != 0
+
+- name: Remove all files and directories in /var/www/html except index.html
+  ansible.builtin.command: >
+    find /var/www/html -mindepth 1 -not -name 'index.html' -exec rm -rfv {} +
+  register: deleted_http_sites
+  ignore_errors: true
+  changed_when: deleted_http_sites.rc == 0
+  failed_when: deleted_http_sites.rc != 0
+
+- name: Create webroot directory
+  ansible.builtin.command: |
+    mkdir -p /var/www/html/{{ vhosts_dictionary | map(attribute='redirector_domain') | join(',') | quote }}
+  register: mkdir_result
+  ignore_errors: true
+  changed_when: mkdir_result.rc == 0
+  failed_when: mkdir_result.rc != 0
+
+- name: Enable http Apache sites
+  ansible.builtin.command: |
+    a2ensite rt_{{ item.redirector_domain }}.conf
+  with_items: "{{ vhosts_dictionary }}"
+  register: enable_http_sites
+  ignore_errors: true
+  changed_when: enable_http_sites.rc == 0
+  failed_when: enable_http_sites.rc != 0
+
+- name: Enable https Apache sites
+  ansible.builtin.command: |
+    a2ensite rtssl_{{ item.redirector_domain }}.conf
+  with_items: "{{ vhosts_dictionary }}"
+  register: enable_https_sites
+  ignore_errors: true
+  changed_when: enable_https_sites.rc == 0
+  failed_when: enable_https_sites.rc != 0
+
+- name: Ensure the webroot directory exists
+  ansible.builtin.file:
+    path: /var/www/html/.well-known/acme-challenge/
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+
+- name: Ensure the correct ownership of the webroot directory
+  ansible.builtin.command: chown -R www-data:www-data /var/www/html/
+  register: webroot_directory_ownership_changed
+  ignore_errors: true
+  changed_when: webroot_directory_ownership_changed.rc == 0
+  failed_when: webroot_directory_ownership_changed.rc != 0
+  become: true
+
+- name: Install letsencrypt for apache
+  ansible.builtin.command: |
+    sudo certbot --apache --post-hook "service apache2 restart" --agree-tos --register-unsafely-without-email -w /var/www/html/ -d {{ vhosts_dictionary | map(attribute='redirector_domain') | join(',') | quote }} --force-renewal
+#    sudo certbot --apache --email admin@{{ vhosts_dictionary | map(attribute='redirector_domain') | join(',') | quote }}
+#    --agree-tos --no-eff-email -d {{ vhosts_dictionary | map(attribute='redirector_domain') | join(',') | quote }}
+#    --redirect --hsts --uir --force-renewal
+  with_items: "{{ vhosts_dictionary }}"
+  register: le_cert_issued
+  ignore_errors: true
+  changed_when: le_cert_issued.rc == 0
+  failed_when: le_cert_issued.rc != 0
+  become: true
+- name: Fetch Cert File
+  run_once: true
+  ansible.builtin.fetch:
+    src: /etc/letsencrypt/live/{{ item.redirector_domain }}/cert.pem
+    dest: certs/
+    flat: true
+  with_items: "{{ vhosts_dictionary }}"
+- name: Fetch Chain File
+  run_once: true
+  ansible.builtin.fetch:
+    src: /etc/letsencrypt/live/{{ item.redirector_domain }}/chain.pem
+    dest: certs/
+    flat: true
+  with_items: "{{ vhosts_dictionary }}"
+- name: Fetch PrivKey File
+  run_once: true
+  ansible.builtin.fetch:
+    src: /etc/letsencrypt/live/{{ item.redirector_domain }}/privkey.pem
+    dest: certs/
+    flat: true
+  with_items: "{{ vhosts_dictionary }}"
+- name: Fetch FullChain File
+  run_once: true
+  ansible.builtin.fetch:
+    src: /etc/letsencrypt/live/{{ item.redirector_domain }}/fullchain.pem
+    dest: certs/
+    flat: true
+  with_items: "{{ vhosts_dictionary }}"

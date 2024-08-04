@@ -1,0 +1,9 @@
+all:
+        100.29.22.77:
+        ansible_host: 100.29.22.77
+        ansible_become_password: kali
+        ansible_user: kali
+vars:
+        ansible_port: 22
+        ansible_connection: ssh
+        ansible_python_interpreter: '/usr/bin/python3'

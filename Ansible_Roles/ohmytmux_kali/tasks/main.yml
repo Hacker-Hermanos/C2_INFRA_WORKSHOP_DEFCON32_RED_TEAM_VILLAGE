@@ -1,0 +1,154 @@
+---
+# tasks file for ohmytmux
+
+# Check if tmux is installed with apt before installing
+
+- name: Gather package facts
+  ansible.builtin.package_facts:
+    manager: apt
+
+- name: Check if tmux is installed
+  ansible.builtin.debug:
+    var: "'tmux' in ansible_facts.packages"
+  register: tmux_installed
+
+# Install tmux with apt if it is not installed
+
+- name: Install tmux with apt if it is not installed
+  when: tmux_installed != "True"
+  ansible.builtin.apt:
+    name: tmux
+    state: latest
+    update_cache: true
+  register: tmux_installation
+
+# Check if tmux is installed with apt after installing
+
+- name: Check if tmux is installed with apt after installing
+  when: tmux_installation is changed
+  ansible.builtin.package_facts:
+    manager: apt
+  register: post_install
+
+# Confirm tmux installation
+
+- name: Confirm tmux installation
+  ansible.builtin.debug:
+    var: "'tmux' in post_install.ansible_facts.packages"
+
+
+#- name: Check if tmux is installed with apt before installing
+#  ansible.builtin.apt:
+#    name: "{{ item }}"
+#    state: latest
+#  loop:
+#    - tmux
+#  register: tmux_initial_check
+#  failed_when: tmux_initial_check.state != latest
+#  changed_when: tmux_initial_check.state != latest # <- Uses the return code to define when the task has changed.
+#  ignore_errors: true
+#
+## Output the result of check if tmux is installed with apt before attempting to install
+#
+#
+#- name: Output the result of check if tmux is installed with apt before attempting to install
+#  ansible.builtin.debug:
+#    var: tmux_initial_check
+#
+## Install tmux with apt
+#
+#- name: Install tmux with apt
+#  when: tmux_initial_check is failed
+#  ansible.builtin.apt:
+#    update_cache: true
+#    pkg: "{{ item }}"
+#  loop:
+#    - tmux
+#  ignore_errors: true
+#  register: tmux_installation_result
+##  failed_when: tmux_installation_result.rc|int != 0
+##  changed_when: tmux_installation_result.rc != 0 # <- Uses the return code to define when the task has changed.
+#
+## Check if tmux is installed with apt after installing
+#
+#- name: Check if tmux is installed with apt after installing
+##  when: tmux_installation_result is failed
+#  ansible.builtin.apt:
+#    name: "{{ item }}"
+#    state: latest
+#  loop:
+#    - tmux
+#  register: tmux_post_install_validated
+#  failed_when: tmux_post_install_validated.state != latest
+#  changed_when: tmux_post_install_validated.state != latest # <- Uses the return code to define when the task has changed.
+#  ignore_errors: false
+
+# Install oh-my-tmux via git for root
+
+- name: Install oh-my-tmux via git
+  ansible.builtin.git:
+    repo: https://github.com/gpakosz/.tmux.git
+    dest: /root/.tmux
+  become: true
+
+# Install oh-my-tmux.conf via symbolic link to /root/.tmux.conf
+
+- name: Install oh-my-tmux.conf via symbolic link to /root/.tmux.conf
+  ansible.builtin.file:
+    src: /root/.tmux/.tmux.conf
+    dest: /root/.tmux.conf
+    state: link
+    force: true
+  become: true
+
+# Copy oh-my-tmux.conf.local to /root/.tmux.conf.local
+
+- name: Copy oh-my-tmux.conf.local to /root/.tmux.conf.local
+  ansible.builtin.copy:
+    src: /root/.tmux/.tmux.conf.local
+    dest: /root/.tmux.conf.local
+    remote_src: true
+  become: true
+
+# Validate oh-my-tmux.conf.local file exists
+
+- name: Validate oh-my-tmux.conf.local file exists
+  ansible.builtin.file:
+    dest: /root/.tmux.conf.local
+    state: file
+  become: true
+
+# Install oh-my-tmux via git for low privileged user
+
+- name: Install oh-my-tmux via git
+  ansible.builtin.git:
+    repo: https://github.com/gpakosz/.tmux.git
+    dest: $HOME/.tmux
+  become_user: kali
+
+# Install oh-my-tmux.conf via symbolic link to $HOME/.tmux.conf
+
+- name: Install oh-my-tmux.conf via symbolic link to $HOME/.tmux.conf
+  ansible.builtin.file:
+    src: $HOME/.tmux/.tmux.conf
+    dest: $HOME/.tmux.conf
+    state: link
+    force: true
+  become_user: kali
+
+# Copy oh-my-tmux.conf.local to $HOME/.tmux.conf.local
+
+- name: Copy oh-my-tmux.conf.local to $HOME/.tmux.conf.local
+  ansible.builtin.copy:
+    src: $HOME/.tmux/.tmux.conf.local
+    dest: $HOME/.tmux.conf.local
+    remote_src: true
+  become_user: kali
+
+# Validate oh-my-tmux.conf.local file exists
+
+- name: Validate oh-my-tmux.conf.local file exists
+  ansible.builtin.file:
+    dest: $HOME/.tmux.conf.local
+    state: file
+  become_user: kali

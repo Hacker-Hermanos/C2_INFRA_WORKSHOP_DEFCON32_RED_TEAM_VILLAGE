@@ -1,0 +1,13 @@
+---
+- name: Install C2 Frameworks for YYYY-MO-OPERATION_NAME-OPERATION_TYPE via Ansible Roles
+  hosts: all
+  become: true
+  remote_user: kali
+  gather_facts: true
+  become_method: ansible.builtin.sudo
+  roles:
+    - tailscale_kali
+#    - ohmytmux_kali
+#    - ohmyzsh_kali  
+    - mythic_kali
+#    - sliver_kali

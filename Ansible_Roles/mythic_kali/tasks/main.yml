@@ -1,0 +1,444 @@
+---
+#- name: Loop through expect and pre-requisite packages Installation
+#  ansible.builtin.apt:
+#    update_cache: true
+#    pkg: "{{ item }}"
+#  loop:
+#    - gpg
+#    - build-essential
+#    - mingw-w64
+#    - binutils-mingw-w64
+#    - g++-mingw-w64
+#
+## Validate expect installation
+#
+#- name: Loop through expect and pre-requisite packages validation
+#  ansible.builtin.apt:
+#    pkg: "{{ item }}"
+#    state: latest
+#  loop:
+#    - gpg
+#    - build-essential
+#    - mingw-w64
+#    - binutils-mingw-w64
+#    - g++-mingw-w64
+#
+#
+#- name: Delete Mythic destination path if it exists
+#  ansible.builtin.file:
+#    path: "{{ installation_path }}"
+#    state: absent
+#    force: true
+#
+#- name: Remove Docker repository file if exists
+#  ansible.builtin.file:
+#    path: /etc/apt/sources.list.d/docker-ce.list
+#    state: absent
+#  become: true
+#
+#- name: Add official Docker GPG key (Debian)
+#  ansible.builtin.apt_key:
+#    url: "https://download.docker.com/linux/debian/gpg"
+#    state: present
+#
+#- name: Install packages necessary for APT to use a repository over HTTPS
+#  ansible.builtin.apt:
+#    pkg:
+#      - apt-transport-https
+#      - ca-certificates
+#      - curl
+#      - software-properties-common
+#    update_cache: true
+#    install_recommends: false
+#    state: present
+#
+#- name: Add official Docker APT repository (Debian)
+#  ansible.builtin.apt_repository:
+#    repo: "deb [arch=amd64] https://download.docker.com/linux/debian bullseye stable"
+#    state: present
+#    filename: 'docker-official'
+#    update_cache: true
+#
+#- name: Add Docker repository to /etc/apt/sources.list.d/docker-ce.list
+#  ansible.builtin.lineinfile:
+#    path: /etc/apt/sources.list.d/docker-ce.list
+#    line: "deb https://download.docker.com/linux/debian bullseye stable"
+#    create: true
+#    insertbefore: BOF
+#    state: present
+#    mode: '0644'  # Set the file permissions to 644 (rw-r--r--)
+#  become: true
+#
+#- name: Update apt
+#  ansible.builtin.apt:
+#    update_cache: true
+#
+#- name: Loop through expect and pre-requisite packages Installation
+#  ansible.builtin.apt:
+#    update_cache: true
+#    pkg: "{{ item }}"
+#  loop:
+#    - docker.io
+#    - python3-docker
+#    - ca-certificates
+#    - curl
+#    - gnupg
+#    - docker-ce
+#    - #docker-compose
+## Validate expect installation
+#
+#- name: Loop through expect and pre-requisite packages validation
+#  ansible.builtin.apt:
+#    pkg: "{{ item }}"
+#    state: present
+#  loop:
+#    - docker.io
+#    - python3-docker
+#    - ca-certificates
+#    - curl
+#    - gnupg
+#
+##- name: Install Pip
+##  ansible.builtin.include_role:
+##    name: geerlingguy.pip
+#
+#
+#- name: Restart Docker Service
+#  ansible.builtin.service:
+#    name: docker
+#    state: restarted
+#  become_user: root
+#  become: true
+#- name: Enable Docker Service
+#  ansible.builtin.service:
+#    name: docker
+#    enabled: true
+#  become_user: root
+#  become: true
+#
+#- name: Add the current user to the docker group
+#  ansible.builtin.user:
+#    name: "{{ ansible_user }}"
+#    groups: docker
+#    append: true
+#  become_user: root
+#  become: true
+#  ignore_errors: true
+#  
+#- name: Add users to the Docker group
+#  ansible.builtin.user:
+#    name: "{{ item }}"
+#    groups: docker
+#    append: true
+#  loop:
+#    - "{{ system_user }}"
+#    - kali
+#  ignore_errors: true
+
+- name: Install Docker Compose standalone
+  ansible.builtin.get_url:
+    url: https://github.com/docker/compose/releases/download/v2.29.1/docker-compose-linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    mode: '0755'
+
+- name: Ensure docker-compose has executable permissions
+  ansible.builtin.file:
+    path: /usr/local/bin/docker-compose
+    mode: '0755'
+    state: file
+
+- name: Create a symbolic link for docker-compose in /usr/bin
+  ansible.builtin.file:
+    src: /usr/local/bin/docker-compose
+    dest: /usr/bin/docker-compose
+    state: link
+  become: true
+
+- name: Validate docker-compose installation
+  ansible.builtin.command:
+    cmd: docker-compose --version
+  register: result
+  failed_when: result.rc != 0
+  changed_when: false
+
+# Validate expect installation
+
+- name: Loop through expect and pre-requisite packages validation
+  ansible.builtin.apt:
+    pkg: "{{ item }}"
+    state: latest
+  loop:
+    - gpg
+    - build-essential
+    - mingw-w64
+    - binutils-mingw-w64
+    - g++-mingw-w64
+
+- name: Delete Mythic destination path if it exists
+  ansible.builtin.file:
+    path: "{{ installation_path }}"
+    state: absent
+    force: true
+
+- name: Remove Docker repository file if exists
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/docker-ce.list
+    state: absent
+  become: true
+
+- name: Add official Docker GPG key (Debian)
+  ansible.builtin.apt_key:
+    url: "https://download.docker.com/linux/debian/gpg"
+    state: present
+
+- name: Install packages necessary for APT to use a repository over HTTPS
+  ansible.builtin.apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+    update_cache: true
+    install_recommends: false
+    state: present
+
+- name: Add official Docker APT repository (Debian)
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/debian bullseye stable"
+    state: present
+    filename: 'docker-official'
+    update_cache: true
+
+- name: Add Docker repository to /etc/apt/sources.list.d/docker-ce.list
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list.d/docker-ce.list
+    line: "deb https://download.docker.com/linux/debian bullseye stable"
+    create: true
+    insertbefore: BOF
+    state: present
+    mode: '0644'  # Set the file permissions to 644 (rw-r--r--)
+  become: true
+
+- name: Update apt
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Loop through expect and pre-requisite packages Installation
+  ansible.builtin.apt:
+    update_cache: true
+    pkg: "{{ item }}"
+  loop:
+    - docker.io
+    - python3-docker
+    - ca-certificates
+    - curl
+    - gnupg
+    - docker-ce
+
+- name: Loop through expect and pre-requisite packages validation
+  ansible.builtin.apt:
+    pkg: "{{ item }}"
+    state: present
+  loop:
+    - docker.io
+    - python3-docker
+    - ca-certificates
+    - curl
+    - gnupg
+
+#- name: Install Pip
+#  ansible.builtin.include_role:
+#    name: geerlingguy.pip
+
+- name: Restart Docker Service
+  ansible.builtin.service:
+    name: docker
+    state: restarted
+  become_user: root
+  become: true
+
+- name: Enable Docker Service
+  ansible.builtin.service:
+    name: docker
+    enabled: true
+  become_user: root
+  become: true
+
+- name: Add the current user to the docker group
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: true
+  become_user: root
+  become: true
+  ignore_errors: true
+  
+- name: Add users to the Docker group
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  loop:
+    - "{{ system_user }}"
+    - kali
+  ignore_errors: true
+
+
+#- name: Download Mythic
+#  ansible.builtin.git:
+#    repo: "{{ mythic_repo }}"
+#    dest: "{{ installation_path }}"
+#    version: "{{ mythic_version }}"
+#  become: true
+#
+#- name: Check for mythic config
+#  ansible.builtin.stat:
+#    path: "{{ installation_path }}/.env"
+#  register: env_stat
+#- name: Make Mythic_CLI
+#  ansible.builtin.command: make
+#  args:
+#    chdir: "{{ installation_path }}"
+#  when: not env_stat.stat.exists
+#  become: true
+#  become_user: root
+#  changed_when: false
+#
+##- name: Create mythic config
+##  ansible.builtin.shell: ./mythic-cli config > .env
+##  args:
+##    chdir: "{{ installation_path }}"
+##  when: not env_stat.stat.exists
+##  become: true
+##  become_user: root
+##  changed_when: false
+##- name: Configure Mythic | Set variables
+##  ansible.builtin.lineinfile:
+##    path: '{{ installation_path }}/.env'
+##    regexp: '^{{ item.key }}'
+##    line: '{{ item.key }}={{ item.value }}'
+##  with_dict:
+##    MYTHIC_SERVER_HOST: '{{ server_header }}'
+##    MYTHIC_ADMIN_USER: '{{ admin_username }}'
+##    MYTHIC_ADMIN_PASSWORD: '{{ default_password }}'
+##    DEFAULT_OPERATION_NAME: '{{ operation_name }}'
+##  no_log: false
+##  become: true
+#- name: Get Mythic container info
+#  community.docker.docker_container_info:
+#    name: mythic_server
+#  register: mythic_result
+#  become: true
+#
+#- name: Start Mythic
+#  ansible.builtin.command: "{{ installation_path }}/mythic-cli start"
+#  args:
+#    chdir: "{{ installation_path }}"
+#  when: not mythic_result.exists
+#  become_user: root
+#  become: true
+#  changed_when: false
+
+- name: Check if Mythic destination path exists
+  ansible.builtin.stat:
+    path: "{{ installation_path }}"
+  register: installation_path_stat
+
+- name: Delete Mythic destination path if it exists and is not empty
+  ansible.builtin.file:
+    path: "{{ installation_path }}"
+    state: absent
+    force: true
+  when: installation_path_stat.stat.exists and not installation_path_stat.stat.isdir
+
+- name: Ensure Mythic destination path is empty if it exists
+  ansible.builtin.shell: "rm -rf {{ installation_path }}/*"
+  when: installation_path_stat.stat.exists and installation_path_stat.stat.isdir
+  become: true
+  ignore_errors: true
+
+- name: Create Mythic destination path if it doesn't exist
+  ansible.builtin.file:
+    path: "{{ installation_path }}"
+    state: directory
+  when: not installation_path_stat.stat.exists
+  become: true
+
+- name: Download Mythic
+  ansible.builtin.git:
+    repo: "{{ mythic_repo }}"
+    dest: "{{ installation_path }}"
+    version: "{{ mythic_version }}"
+  become: true
+
+- name: Check for mythic config
+  ansible.builtin.stat:
+    path: "{{ installation_path }}/.env"
+  register: env_stat
+
+- name: Make Mythic_CLI
+  ansible.builtin.command: make
+  args:
+    chdir: "{{ installation_path }}"
+  when: not env_stat.stat.exists
+  become: true
+  become_user: root
+  changed_when: false
+
+#- name: Create mythic config
+#  ansible.builtin.shell: ./mythic-cli config > .env
+#  args:
+#    chdir: "{{ installation_path }}"
+#  when: not env_stat.stat.exists
+#  become: true
+#  become_user: root
+#  changed_when: false
+
+#- name: Configure Mythic | Set variables
+#  ansible.builtin.lineinfile:
+#    path: '{{ installation_path }}/.env'
+#    regexp: '^{{ item.key }}'
+#    line: '{{ item.key }}={{ item.value }}'
+#  with_dict:
+#    MYTHIC_SERVER_HOST: '{{ server_header }}'
+#    MYTHIC_ADMIN_USER: '{{ admin_username }}'
+#    MYTHIC_ADMIN_PASSWORD: '{{ default_password }}'
+#    DEFAULT_OPERATION_NAME: '{{ operation_name }}'
+#  no_log: false
+#  become: true
+
+- name: Get Mythic container info
+  community.docker.docker_container_info:
+    name: mythic_server
+  register: mythic_result
+  become: true
+
+- name: Start Mythic
+  ansible.builtin.command: "{{ installation_path }}/mythic-cli start"
+  args:
+    chdir: "{{ installation_path }}"
+  when: not mythic_result.exists
+  become_user: root
+  become: true
+  changed_when: false
+
+
+- name: Install Agents
+  ansible.builtin.include_tasks: install_agents.yml
+  vars:
+    agent: "{{ item }}"
+  loop: "{{ agents }}"
+
+- name: Stop Mythic using ./mythic-cli
+  ansible.builtin.command: "./mythic-cli stop"
+  args:
+    chdir: "{{ installation_path }}"
+  become: true
+  changed_when: false
+
+- name: Stop Mythic docker-compose
+  ansible.builtin.command: "docker-compose down --remove-orphans"
+  args:
+    chdir: "{{ installation_path }}"
+  become: true
+  changed_when: false

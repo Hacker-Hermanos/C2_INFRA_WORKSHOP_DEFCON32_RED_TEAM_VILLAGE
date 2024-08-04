@@ -1,0 +1,4 @@
+---
+# vars file for ohmytmux
+remote_user: ubuntu
+become_user: ubuntu

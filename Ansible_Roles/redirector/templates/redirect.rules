@@ -1,0 +1,49 @@
+	# Note this version requires Apache 2.4+
+	#
+	# Save this file into something like /etc/apache2/redirect.rules.
+	# Then in your site's apache conf file (in /etc/apache2/sites-avaiable/), put this statement somewhere near the bottom
+	# 
+	# Include /etc/apache2/redirect.rules
+
+	Define REDIR_TARGET hackerhermanos.com
+
+	RewriteEngine On
+	RewriteOptions Inherit
+
+	# Uncomment the below line for verbose logging, including seeing which rule matched.
+	LogLevel alert rewrite:trace6
+
+	# BURN AV BURN
+
+	# Class A Exclusions. Includes large ranges from Azure & AWS
+	# Cloudfronted requests by default will have a UA of "Amazon Cloudfront". More info here: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/header-caching.html#header-caching-web-device
+	# RewriteCond                             expr                             "-R '245.145.0.0/8'" [OR]
+	# RewriteCond                             %{HTTP_USER_AGENT} 			   "!cloudfront" [NC]
+	# RewriteRule 							  ^(.*)$ 						   %{REQUEST_SCHEME}://${REDIR_TARGET} [R=301]
+
+	# AWS Fine Grained
+	RewriteCond                             expr                             "-R '100.20.0.0/16'" [OR]
+	RewriteCond                             expr                             "-R '100.24.0.0/16'" [OR]
+	RewriteCond                             expr                             "-R '103.246.0.0/16'" [OR]
+	RewriteCond                             expr                             "-R '103.4.0.0/16'" [OR]
+	RewriteCond                             expr                             "-R '95.211.118.194'"	[OR]
+	RewriteCond                             expr                             "-R '95.211.230.94'"	[OR]
+	RewriteCond                             expr                             "-R '95.215.44.194'"	[OR]
+	RewriteCond                             expr                             "-R '95.249.94.233'"	[OR]
+	RewriteCond                             expr                             "-R '95.79.145.72'"	[OR]
+	RewriteCond                             expr                             "-R '96.255.14.191'"	[OR]
+	RewriteCond                             expr                             "-R '96.64.149.101'"	[OR]
+	RewriteCond                             expr                             "-R '97.74.237.196'"	[OR]
+	RewriteCond                             expr                             "-R '98.174.90.43'"	
+	RewriteRule 							^(.*)$ 							 %{REQUEST_SCHEME}://${REDIR_TARGET} [R=301]
+
+	# Bot User Agents
+
+	RewriteCond                             %{HTTP_USER_AGENT}               (drip|easydl|joc|jyxobot|memo|microsoft.?url|psbot|pump|queryn|recorder|realdownload|reaper|reget|true_robot) [NC,OR]
+	RewriteCond                             %{HTTP_USER_AGENT}               (Nikto|Nessus|sqlmap|WPScan|FeroxBuster|Masscan|Masscan-ng|Media\ Toolkit|Ffuf|l9explore|l9tcpid|SMRF\ URL\ Expander|Dirsearch|Gobuster|virustotal|paloalto|palo|palo\ alto) [NC,OR]
+	RewriteCond                             %{HTTP_USER_AGENT}               (libweb|likse|lftp|lwp|magnet|mag-net|markwatch|nata|nearsite|netants|netcraft|netmechanic|netspider|nextgensearchbot|octopus|offline.?explorer|outfoxbot|pagegrabber|papa|pavuk) [NC,OR]
+	RewriteCond                             %{HTTP_USER_AGENT}               (bigfoot|black.?hole|blackwidow|blowfish|botalot|buddy|builtbottough|bullseye|cheesebot|cherrypicker|chinaclaw|collector|copier|copyrightcheck|cosmos|crescent|curl|custo|da|diibot|disco|dittospyder|dragonfly|emailcollector|emailsiphon|emailwolf|erocrawler|exabot|eyenetie|filehound|flashget|flunky|frontpage|getright|getweb|go.?zilla|go-ahead-got-it|gotit|grabnet|grafula|harvest|hloader|hmview|httplib|httrack|humanlinks|ilsebot|infonavirobot|infotekies|intelliseek|interget|iria|jennybot|jetcar|justview|kenjin|keyword|larbin|leechftp|lexibot|lnspiderguy|mata.?hari|midown.?tool|miixpc|mirror|missigua|mister.?pix|moget|mozilla.?newt|nameprotect|navroad|net.?vampire|nicerspro|nimblecrawler|npbot|offline.?navigator|openfind|psbot|pump|queryn|recorder|realdownload|reaper|reget|true_robot|propowerbot|prowebwalker|repomonkey|rma|internetseer|sitesnagger|siphon|slysearch|smartdownload|snake|snapbot|snoopy|sogou|spacebison|spankbot|spanner|sqworm|superbot|telesoft|the.?intraformant|thenomad|tighttwatbot|titan|urldispatcher|libwww-perl|widow|wisenutbot|wwwoffle|xaldon|xenu|zeus|zyborg|anonymouse|craftbot|download|extract|stripper|sucker|ninja|clshttp|webspider|leacher|collector|grabber|webpictures) [NC,OR]
+	RewriteCond                             %{HTTP_USER_AGENT}               (metauri|Sogou\ web\ spider) [NC,OR]
+	RewriteCond                             %{HTTP_USER_AGENT}               (attach|asterias|superhttp|surfbot|suzuran|szukacz|takeout|teleport|turingos|turnitinbot|urly.?warning|vacuum|vci|voideye|whacker) [NC,OR]
+	RewriteCond                             %{HTTP_USER_AGENT}               (google|yandex|bingbot|Googlebot|bot|spider|simple|BBBike|wget|cloudfront|curl|Python|Wget|crawl|baidu|Lynx|xforce|HTTrack|Slackbot|netcraft|NetcraftSurveyAgent|Netcraft) [NC]
+	RewriteRule                             ^(.*)$ 							 %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]

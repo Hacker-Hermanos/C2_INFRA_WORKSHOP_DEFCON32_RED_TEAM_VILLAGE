@@ -1,0 +1,40 @@
+---
+mythic_repo: https://github.com/its-a-feature/Mythic
+mythic_version: master
+installation_path: /opt/TA0011_C2/Mythic
+#server_host: totally legit
+#admin_username: "test_admin_username"
+#default_password: "test_password"
+#operation_name: "test_operation"
+system_user: docker
+agents:
+#    - repo: https://github.com/MythicAgents/thanatos
+#      branch: main
+    - repo: https://github.com/MythicAgents/Athena
+      branch: main
+#    - repo: https://github.com/MythicAgents/poseidon
+#      branch: master
+#    - repo: https://github.com/MythicAgents/merlin
+#      branch: main
+#    - repo: https://github.com/MythicAgents/medusa
+#      branch: master
+    - repo: https://github.com/MythicAgents/apollo
+      branch: master
+#    - repo: https://github.com/MythicC2Profiles/dns
+#      branch: master
+    - repo: https://github.com/MythicC2Profiles/http
+      branch: master
+#    - repo: https://github.com/MythicC2Profiles/dynamichttp
+#      branch: master
+#    - repo: https://github.com/MythicC2Profiles/basic_logger
+#      branch: master
+#    - repo: https://github.com/MythicC2Profiles/tcp
+#      branch: main
+#    - repo: https://github.com/MythicC2Profiles/websocket
+#      branch: master
+#    - repo: https://github.com/MythicC2Profiles/smb
+#      branch: main
+#    - repo: https://github.com/MythicC2Profiles/slack
+#      branch: master
+#    - repo: https://github.com/MythicC2Profiles/basic_webhook
+#      branch: main

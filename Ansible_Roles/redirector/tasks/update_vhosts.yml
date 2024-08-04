@@ -1,0 +1,77 @@
+---
+- name: Find all files in the sites-available directory
+  ansible.builtin.find:
+    paths: /etc/apache2/sites-available/
+    recurse: true
+    file_type: file
+  register: found_files
+
+- name: Disable http Apache sites
+  ansible.builtin.command: |
+    a2dissite rt_{{ item.redirector_domain }}.conf
+  with_items: "{{ vhosts_dictionary }}"
+  register: disable_http_sites
+  ignore_errors: true
+  changed_when: disable_http_sites.rc == 0
+  failed_when: disable_http_sites.rc != 0
+
+- name: Delete all files in the sites-available directory
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ found_files.files }}"
+
+- name: Create https virtual host files, one per redirector_domain
+  ansible.builtin.template:
+    src: apache_sslvhost.conf.j2
+    dest: /etc/apache2/sites-available/rtssl_{{ item.redirector_domain }}.conf
+    mode: '0644'
+  with_items: "{{ vhosts_dictionary }}"
+
+- name: Create logs directory inside webroot
+  ansible.builtin.file:
+    path: "/var/www/html/{{ item.redirector_domain }}/logs"
+    state: directory
+    mode: '0755'
+  with_items: "{{ vhosts_dictionary }}"
+
+- name: Clear iptables rules
+  ansible.builtin.command: iptables -F
+  become: true
+
+- name: Block all traffic to port 80 using iptables
+  ansible.builtin.command: iptables -A INPUT -p tcp --dport 80 -j REJECT
+  become: true
+
+- name: Disable autoindex module to prevent directory listings
+  ansible.builtin.shell: |
+    a2dismod autoindex
+  failed_when: false
+
+- name: Add redirect.rules file on /etc/apache2/redirect.rules
+  ansible.builtin.template:
+    src: redirect.rules
+    dest: "/etc/apache2/redirect.rules"
+    mode: '0644'
+    force: true
+
+- name: Enable https Apache site
+  ansible.builtin.command: |
+    a2ensite rtssl_{{ item.redirector_domain }}.conf
+  with_items: "{{ vhosts_dictionary }}"
+  register: enable_https_sites
+  ignore_errors: true
+  changed_when: enable_https_sites.rc == 0
+  failed_when: enable_https_sites.rc != 0
+
+- name: Restart apache2 systemd service
+  ansible.builtin.systemd_service:
+    name: apache2
+    state: restarted
+    enabled: true
+
+- name: Enable apache2 systemd service
+  ansible.builtin.systemd_service:
+    name: apache2
+    state: started
+    enabled: true

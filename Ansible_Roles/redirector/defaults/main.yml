@@ -1,0 +1,24 @@
+---
+## defaults file for redirector Ansible Role
+vhosts_dictionary: [
+    {
+    # First hostname configuration
+        redirector_domain: '<REDIRECTOR_DOMAIN.TLD>',
+        backend_teamserver: "<TAILSCALE_C2_VPN_IP>",
+        decoy_domain: 'hackerhermanos.com',
+        server_signature: "nginx/1.20.0",
+        http_port: 80,
+        https_port: 443,
+        c2filters: [
+            {
+                rewritefilter: '^/redteamvillagerocks.*$',
+                backend_teamserver: "<TAILSCALE_C2_VPN_IP>"
+            }
+        ],
+        configs: [
+            {
+
+            },
+        ],
+    },
+]

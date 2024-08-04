@@ -1,0 +1,27 @@
+- name: Assert mandatory variables
+  ansible.builtin.assert:
+    that:
+      - agent is defined
+      - installation_path
+  become: true
+- name: Install Mythic Modules "{{ agent.repo }}"
+  ansible.builtin.command: "./mythic-cli install github {{ agent.repo }} {{ agent.branch }} -f"
+  when: not mythic_result.exists
+  args:
+    chdir: "{{ installation_path }}"
+  become: true
+  become_user: root
+  changed_when: false
+- name: Stop Mythic using ./mythic-cli
+  ansible.builtin.command: "./mythic-cli stop"
+  args:
+    chdir: "{{ installation_path }}"
+  become: true
+  changed_when: false
+
+- name: Stop Mythic docker-compose
+  ansible.builtin.command: "docker-compose down --remove-orphans"
+  args:
+    chdir: "{{ installation_path }}"
+  become: true
+  changed_when: false
