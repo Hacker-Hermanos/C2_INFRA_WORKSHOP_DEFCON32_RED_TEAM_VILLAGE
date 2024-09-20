@@ -99,7 +99,7 @@ variable "allowlist_open_inet" {
 }
 variable "allowlist_cidr" {
   type    = string
-  default = "96.235.189.102/32" # Source IP
+  default = "X.X.X.X/32" # Source IP
   #  sensitive = true
 }
 
