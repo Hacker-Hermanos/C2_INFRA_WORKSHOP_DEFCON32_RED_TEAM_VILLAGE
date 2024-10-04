@@ -5,7 +5,7 @@
 ServerName {{ item.redirector_domain }}
 DocumentRoot /var/www/html/{{ item.redirector_domain }}
 # https://httpd.apache.org/docs/2.4/mod/core.html#loglevel
-LogLevel alert rewrite:trace6
+# LogLevel alert rewrite:trace6
 
 # Allow Directory Listing
 
@@ -62,6 +62,9 @@ RewriteEngine On
 # RewriteRule: If the request contains "/<URI_PATH_C2_TRAFFIC>/", redirect to C2 VPN IPs. If it does not contain the "/<URI_PATH_C2_TRAFFIC>/", traffic will match the RewriteRule for <DECOY_DOMAIN>.<TLD>.
 Include /etc/apache2/redirect.rules
 
+# Define block-list for User-Agents
+RewriteCond %{HTTP_USER_AGENT} (google|yandex|bingbot|Googlebot|bot|spider|simple|BBBike|wget|cloudfront|curl|Python|Wget|crawl|baidu|Lynx|xforce|HTTrack|Slackbot|netcraft|NetcraftSurveyAgent|Netcraft|shodan) [NC]
+RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
 # Custom Header Check
 RewriteCond %{HTTP:Hacker-Hermanos-Rocks} ^$
 RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
@@ -85,8 +88,8 @@ RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
 {% endfor %}
 {% endif %}
 # https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html#rewritecond
-{% if item.c2filters is defined %}
-{% for c in item.c2filters %}
+{% if item.rewrite_rule_filters is defined %}
+{% for c in item.rewrite_rule_filters %}
 RewriteCond %{REQUEST_URI} {{ c.rewritefilter }}
 RewriteRule ^(.*)$ %{REQUEST_SCHEME}://{{ c.backend_teamserver }}%{REQUEST_URI} [P,NE,L]
 ProxyPassReverse ^ %{REQUEST_SCHEME}://{{ c.backend_teamserver }}%{REQUEST_URI} [P,NE]
@@ -96,6 +99,16 @@ ProxyPassReverse ^ %{REQUEST_SCHEME}://{{ c.backend_teamserver }}%{REQUEST_URI} 
 # If the above rules don't match send to <DECOY_DOMAIN>.<TLD> (e.g. hackerhermanos.com or google.com)
 RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
 
+# Custom logging location
+ErrorLog /var/www/html/{{ item.redirector_domain }}/logs/error.log
+CustomLog /var/www/html/{{ item.redirector_domain }}/logs/access.log combined
+
+# Define directory to hold logs and deny access to it
+<Directory /var/www/html/{{ item.redirector_domain }}/logs>
+        Order deny,allow
+        Deny from all
+</Directory>
+
 # Security Headers
 
 Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
@@ -103,7 +116,7 @@ Header always set Content-Security-Policy "default-src 'self'; script-src 'self'
 Header always set X-XSS-Protection "1; mode=block"
 Header always set X-Frame-Options "SAMEORIGIN"
 Header always set X-Content-Type-Options "nosniff"
-Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Referrer-Policy "strict-origin"
 Header set Content-Type "text/html; charset=utf-8"
 
 

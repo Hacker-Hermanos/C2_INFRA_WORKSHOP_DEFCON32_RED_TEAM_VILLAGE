@@ -11,7 +11,7 @@
 	RewriteOptions Inherit
 
 	# Uncomment the below line for verbose logging, including seeing which rule matched.
-	LogLevel alert rewrite:trace6
+	# LogLevel alert rewrite:trace6
 
 	# BURN AV BURN
 

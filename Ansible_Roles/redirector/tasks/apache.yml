@@ -103,9 +103,17 @@
   ansible.builtin.command: chown -Rv www-data:www-data /var/www/html/
   become: true
 
-- name: Create webroot directory
+- name: Create webroot directory in "/var/www/html/{{ item.redirector_domain }}"
   ansible.builtin.file:
     path: "/var/www/html/{{ item.redirector_domain }}"
+    state: directory
+    mode: '0755'
+  with_items: "{{ vhosts_dictionary }}"
+  failed_when: false
+
+- name: Create logs directory at "/var/www/html/{{ item.redirector_domain }}/logs"
+  ansible.builtin.file:
+    path: "/var/www/html/{{ item.redirector_domain }}/logs"
     state: directory
     mode: '0755'
   with_items: "{{ vhosts_dictionary }}"
@@ -126,8 +134,6 @@
     mode: '0644'
     force: true
   with_items: "{{ vhosts_dictionary }}"
-
-
 
 - name: Add Apache modules for SSL, proxy, and headers
   community.general.apache2_module:

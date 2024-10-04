@@ -61,6 +61,13 @@
     group: www-data
     mode: '0755'
 
+- name: Create logs directory at "/var/www/html/{{ item.redirector_domain }}/logs"
+  ansible.builtin.file:
+    path: "/var/www/html/{{ item.redirector_domain }}/logs"
+    state: directory
+    mode: '0755'
+  with_items: "{{ vhosts_dictionary }}"
+  failed_when: false
 
 - name: Ensure the correct ownership of the webroot directory
   ansible.builtin.command: chown -R www-data:www-data /var/www/html/

@@ -35,10 +35,10 @@ Alias /.well-known/acme-challenge/ /var/www/html/.well-known/acme-challenge/
 # LogLevel info ssl:warn
 
 # Set the path for Apache error logs
-ErrorLog /var/www/html/{{ item.redirector_domain }}/error.log
+ErrorLog /var/www/html/{{ item.redirector_domain }}/logs/error.log
 
 # Set the path for Apache access logs and use the 'combined' log format
-CustomLog /var/www/html/{{ item.redirector_domain }}/access.log combined
+CustomLog /var/www/html/{{ item.redirector_domain }}/logs/access.log combined
 
 # Reverse Proxy (Redirector) preserves the original "Host" header from the client's request and sends it to the backend server
 ProxyPreserveHost On

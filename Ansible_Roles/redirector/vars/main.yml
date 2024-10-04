@@ -9,7 +9,7 @@ vhosts_dictionary: [
         server_signature: "nginx/1.20.0",
         http_port: 80,
         https_port: 443,
-        c2filters: [
+        rewrite_rule_filters: [
             {
                 rewritefilter: '^/redteamvillagerocks.*$',
                 backend_teamserver: "<TAILSCALE_C2_VPN_IP>"
@@ -28,7 +28,7 @@ vhosts_dictionary: [
 #        decoy_domain: 'https://hackerhermanos.com',
 #        http_port: 80,
 #        https_port: 443,
-#        c2filters: [
+#        rewrite_rule_filters: [
 #            {
 #                rewritefilter: '^/accounting.*$',
 #                backend_teamserver: "100.109.59.92"
