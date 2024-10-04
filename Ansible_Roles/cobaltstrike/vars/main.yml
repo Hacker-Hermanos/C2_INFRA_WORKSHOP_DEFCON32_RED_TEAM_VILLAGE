@@ -1,0 +1,8 @@
+---
+# vars file for cobaltstrike
+cs_key: ""
+# Must be replaced by a valid Cobalt Strike License. The value committed to the repository is an example and not a valid license.
+# when in <ROLENAME>/defaults/main.yml this is not needed in <ROLENAME>/vars/main.yml
+cs_profile_location: ../files/clean.profile.j2
+cs_profile: 'clean_malleable'
+c2_servers_dir: '/opt/TA0011_C2'

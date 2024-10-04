@@ -1,0 +1,171 @@
+---
+# tasks file for cobaltstrike
+## Install expect for interactive licensing of C2
+- name: Loop through expect, java-common, and openjdk-11-jdk packages Installation
+  ansible.builtin.apt:
+    update_cache: true
+    pkg: "{{ item }}"
+  loop:
+    - expect
+    - java-common
+    - openjdk-11-jdk
+- name: Loop through expect, java-common, and openjdk-11-jdk packages Validation
+  ansible.builtin.apt:
+    pkg: "{{ item }}"
+    state: latest
+  loop:
+    - expect
+    - java-common
+    - openjdk-11-jdk
+
+# Delete directory `/opt/TA0011_C2` if it exsits to avoid conflicts with a previous installations
+
+- name: Delete directory if it exsits to avoid conflicts with a previous installations
+  ansible.builtin.file:
+    path: '{{ c2_servers_dir }}/cobaltstrike'
+    state: absent
+
+# Delete prior `/tmp/cobaltstrike-dist.tgz` if it exists to avoid conflicts with a previous installations
+
+- name: Delete prior /tmp/cobaltstrike-dist.tgz to avoid issues with previous installations
+  ansible.builtin.file:
+    path: '/tmp/cobaltstrike-dist.tgz'
+    state: absent
+
+# Create `/opt/TA0011_C2` directory where Cobalt Strike will be downloaded
+
+- name: Create '/opt/TA0011_C2' where cobalt strike will be downloaded
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+  with_items:
+    - '{{ c2_servers_dir }}'
+    - '{{ c2_servers_dir }}/cobaltstrike/profiles'
+    - '{{ c2_servers_dir }}/cobaltstrike/aggressor_scripts'
+
+- name: Add malleable C2 Profile File to Cobalt Strike directory
+  template:
+    src: "{{ cs_profile_location }}"
+    dest: "{{ c2_servers_dir }}/cobaltstrike/profiles/{{ cs_profile }}.profile"
+    mode: 0600
+
+# Set Default Java version to openjdk11 via update-java-alternatives
+
+- name: Set Default Java version to openjdk11 via update-java-alternatives
+  ansible.builtin.command: update-java-alternatives -s java-1.11.0-openjdk-amd64
+  ignore_errors: true
+  become: true
+
+# Get download token from Cobalt Strike download website using license key (`cs_key` variable) to request archive download
+
+##- name: Get download token from Cobalt Strike download website using license key to request archive download
+##  ansible.builtin.shell: |
+##    curl -i -s -k -X $'POST' -H $'Host: download.cobaltstrike.com' --data-binary $'dlkey={{ cs_key }}' $'https://download.cobaltstrike.com/download'  | grep 'href="/downloads/' | cut -d '/' -f 3
+##  register: download_token
+
+- name: Get download token from Cobalt Strike download website using license key to request archive download
+  ansible.builtin.uri:
+    url: https://download.cobaltstrike.com/download
+    method: POST
+    body: "dlkey={{ cs_key }}"
+    return_content: true
+    validate_certs: false
+  register: cs_download_response
+
+- name: Extract download token from response
+  ansible.builtin.set_fact:
+#    download_token: "{{ cs_download_response.content | regex_search('href=\"/downloads/(.*?)\"', '\\1') }}"
+    download_token: "{{ cs_download_response.content | regex_search('href=\"/downloads/(.*?)/', '\\1') }}"
+
+
+# Downloading Cobalt Strike archive tarball (`.tgz`) to `/tmp/cobaltstrike-dist.tgz`
+
+- name: Downloading Cobalt Strike archive tarball (.tgz) to /tmp/cobaltstrike-dist.tgz
+  ansible.builtin.get_url:
+    url: "https://download.cobaltstrike.com/downloads/{{ download_token[0] }}/latest410/cobaltstrike-dist-linux.tgz"
+    dest: /tmp/cobaltstrike-dist.tgz
+    mode: '0644'
+#  args:
+#    executable: /bin/bash
+
+# Extract Cobalt Strike tarball (.tgz) to directory defined in `c2_servers_dir` variable
+
+- name: Extract Cobalt Strike tarball (.tgz) to directory defined in c2_servers_dir variable
+  ansible.builtin.unarchive:
+    src: "/tmp/cobaltstrike-dist.tgz"
+    dest: "{{ c2_servers_dir }}"
+    remote_src: true
+    extra_opts: "--gzip"
+
+# Upgrade and license Cobalt Strike using expect and passing the license key (`cobaltstrike_license`)
+
+- name: Upgrade and license Cobalt Strike using expect and passing the license key (cobaltstrike_license)
+  ansible.builtin.shell: |
+    # [!] Running update with type: linux
+    # [+] Cobalt Strike Update (20240710)
+    # [+] ****************************************************************************
+    # [+] Cobalt Strike requires Java 11 or later to be installed.
+    # [+] Ensure that Java 11 or later is installed before running the updater.
+    # [+] ****************************************************************************
+    # [+] ----------------------------------------------------------------------------
+    # [+] The Cobalt Strike Installation Guide contains the full list of requirements.
+    # [+] ----------------------------------------------------------------------------
+    # [*] Overriding install type To: linux
+    # [*] Please enter your license key:
+    # <license_key>
+    # [*] Checking for latest version
+    # [+] Your installation of Cobalt Strike is up to date!
+    # [*] Extracting TeamServerImage
+    # [+] SUCCESS! Extracted TeamServerImage
+    # [*] Refresh server cobaltstrike.auth.server
+    # [+] Refreshed your Cobalt Strike server authorization file!
+    # [*] Extracting cobaltstrike-client.jar
+    # [+] SUCCESS! Extracted cobaltstrike-client.jar
+    # [*] Refresh client cobaltstrike.auth.client
+    # [+] Refreshed your Cobalt Strike client authorization file!
+    # [+] Done!
+    log_file "expect.txt"
+    # Increase timeout from 10 to 600 seconds
+    set timeout 300
+    spawn ./update
+    expect {
+      -re "Please enter your license key:" {
+        send [format "%s\n" {{ cs_key }}]
+      } default {
+        exit 1
+      }
+    }
+    # Bail out if we encounter these error conditions
+    expect {
+      -re "(Failed to download hashes|Your license key is invalid)" {
+        exit 1
+      }
+    }
+    expect {
+      -re "Done" {
+        exit 0
+      } default {
+        exit 1
+      }
+    }
+  become: true
+  args:
+    chdir: '{{ c2_servers_dir }}/cobaltstrike'
+    creates: '{{ c2_servers_dir }}/cobaltstrike/cobaltstrike.auth'
+    executable: /usr/bin/expect
+  failed_when: expect.rc != 0
+# no_log parameter prevents the Cobalt Strike License from being displayed to standard output
+#  no_log: true
+  register: expect
+  vars:
+    cobaltstrike_license: '{{ cs_key }}'
+
+
+- name: Change ownership of the directory '{{ c2_servers_dir }}'
+  ansible.builtin.file:
+    path: '{{ c2_servers_dir }}'
+    owner: kali
+    group: kali
+    state: directory
+    recurse: true
+  become: true
