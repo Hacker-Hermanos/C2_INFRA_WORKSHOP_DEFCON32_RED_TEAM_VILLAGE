@@ -50,10 +50,11 @@
 
 - name: Add redirect.rules file on /etc/apache2/redirect.rules
   ansible.builtin.template:
-    src: redirect.rules
+    src: redirect.rules.j2
     dest: "/etc/apache2/redirect.rules"
     mode: '0644'
     force: true
+  with_items: "{{ vhosts_dictionary }}"
 
 - name: Enable https Apache site
   ansible.builtin.command: |

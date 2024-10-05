@@ -5,12 +5,15 @@
 ServerName {{ item.redirector_domain }}
 DocumentRoot /var/www/html/{{ item.redirector_domain }}
 
+# https://httpd.apache.org/docs/2.4/mod/core.html#loglevel
+# LogLevel alert rewrite:trace6
+
 # Allow Directory Listing
 
 <Directory /var/www/html>
-Options Indexes FollowSymLinks
-AllowOverride All
-Require all granted
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
 </Directory>
 
 # Allow challenge from letsencrypt
@@ -22,28 +25,29 @@ Alias /.well-known/acme-challenge/ /var/www/html/.well-known/acme-challenge/
         Require all granted
 </Directory>
 
-<IfModule mod_headers.c>
-        Header set Cache-Control "no-store, no-cache, proxy-revalidate"
-        Header set Pragma "no-cache"
-        Header set Expires "0"
-</IfModule>
-
-# Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
-# error, crit, alert, emerg.
-# It is also possible to configure the loglevel for particular
-# modules, e.g.
-# LogLevel info ssl:warn
-
-# Set the path for Apache error logs
+# Custom logging location
 ErrorLog /var/www/html/{{ item.redirector_domain }}/logs/error.log
-
-# Set the path for Apache access logs and use the 'combined' log format
 CustomLog /var/www/html/{{ item.redirector_domain }}/logs/access.log combined
 
-# Reverse Proxy (Redirector) preserves the original "Host" header from the client's request and sends it to the backend server
-ProxyPreserveHost On
+# Define directory to hold logs and deny access to it
+<Directory /var/www/html/{{ item.redirector_domain }}/logs>
+        Order deny,allow
+        Deny from all
+</Directory>
 
-# Enable or disable the Apache URL rewriting engine
-RewriteEngine On
+# Security Headers
+
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-store, no-cache, proxy-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin"
+    Header set Content-Type "text/html; charset=utf-8"
+</IfModule>
 
 </VirtualHost>

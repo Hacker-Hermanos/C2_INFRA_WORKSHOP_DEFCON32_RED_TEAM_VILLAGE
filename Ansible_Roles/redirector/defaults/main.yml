@@ -1,24 +1,51 @@
 ---
-## defaults file for redirector Ansible Role
+# Defaults file for redirector Ansible Role
 vhosts_dictionary: [
     {
     # First hostname configuration
-        redirector_domain: '<REDIRECTOR_DOMAIN.TLD>',
-        backend_teamserver: "<TAILSCALE_C2_VPN_IP>",
-        decoy_domain: 'hackerhermanos.com',
-        server_signature: "nginx/1.20.0",
-        http_port: 80,
-        https_port: 443,
-        rewrite_rule_filters: [
+        redirector_domain: '<REDIRECTOR_DOMAIN_TLD>',
+        decoy_domain: '<DECOY_DOMAIN_TLD>',
+        http_port: <HTTP_PORT>,
+        https_port: <HTTPS_PORT>,
+        server_signature: "<SERVER_SIGNATURE>",
+        backend_teamservers: [
             {
-                rewritefilter: '^/redteamvillagerocks.*$',
-                backend_teamserver: "<TAILSCALE_C2_VPN_IP>"
+                name: '<Prod_C2_TeamServer_TS0>',
+                vpn_ip: '<PROD_C2_VPN_IP>'
+            },
+            {
+                name: '<Dev_C2_TeamServer_TS1>',
+                vpn_ip: '<DEV_C2_VPN_IP>'
             }
         ],
-        configs: [
-            {
-
-            },
+        required_http_header: [
+            '<REQUIRED_HTTP_HEADER_1>',
+            '<REQUIRED_HTTP_HEADER_2>',
+            # '<ADDITIONAL_HEADER>' # Add additional headers as needed
         ],
-    },
+        uri_path_definitions: [
+            {
+                name: '<URI_PATH_NAME_1>',
+                path: '<URI_PATH_1>'
+            },
+            {
+                name: '<URI_PATH_NAME_2>',
+                path: '<URI_PATH_2>'
+            }
+            # Add more URI path definitions as needed
+        ],
+        rewrite_rule_filters: [
+            {
+                rewritefilter: '<REWRITE_FILTER_1>',
+                backend_forward_port: '<BACKEND_PORT_1>',
+                backend_teamserver: '${PROD_C2_VPN_IP}'
+            },
+            {
+                rewritefilter: '<REWRITE_FILTER_2>',
+                backend_forward_port: '<BACKEND_PORT_2>',
+                backend_teamserver: '${DEV_C2_VPN_IP}'
+            }
+            # Add more filters as needed
+        ]
+    }
 ]
