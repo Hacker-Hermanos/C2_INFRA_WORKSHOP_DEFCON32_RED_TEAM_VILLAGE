@@ -29,7 +29,7 @@ cat -n /var/www/html/<REDIRECTOR_DOMAIN.TLD>/logs/*.log | grep "<SOURCE_IP>" | a
    - Envía tráfico de prueba:
 
 ```Bash
-curl -k -s https://<REDIRECTOR_DOMAIN.TLD>/redteamvillagerocks -v -A "Mozilla/5.0" --header "Hacker-Hermanos-Rocks: True"
+curl -k -s https://<REDIRECTOR_DOMAIN.TLD>/Hacker-Hermanos-Rocks -v -A "Mozilla/5.0" --header "Hacker-Hermanos-Rocks: True"
 ```
 
 5. Configura los listeners del servidor C2:

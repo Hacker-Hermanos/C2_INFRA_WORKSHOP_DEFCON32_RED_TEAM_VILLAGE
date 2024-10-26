@@ -10,12 +10,12 @@ export ANSIBLE_HOST_KEY_CHECKING=false ; ansible-playbook -i '<IPv4>, ' --privat
 
 
 # ¡Prueba tu redirector! Este comando hace una petición HTTP simple
-curl -k -s "http://<REDIRECTOR_DOMAIN.TLD>/redteamvillagerocks" -v
+curl -k -s "http://<REDIRECTOR_DOMAIN.TLD>/Hacker-Hermanos-Rocks" -v
 
 # Configura automáticamente SSL con Let's Encrypt - ¡súper útil!
 sudo certbot --apache --post-hook "service apache2 restart" --agree-tos --register-unsafely-without-email -w /var/www/html/ -d <REDIRECTOR_DOMAIN.TLD> --force-renewal
 
 # Prueba avanzada del redirector con diferentes User-Agents y headers personalizados
-curl -k -s "https://<REDIRECTOR_DOMAIN.TLD>/redteamvillagerocks" -v -A "curl" -H "Hacker-Hermanos-Rocks: True"
-curl -k -s "https://<REDIRECTOR_DOMAIN.TLD>/redteamvillagerocks" -v -A "Mozilla/5.0" -H "Hacker-Hermanos-Rocks: True"
+curl -k -s "https://<REDIRECTOR_DOMAIN.TLD>/Hacker-Hermanos-Rocks" -v -A "curl" -H "Hacker-Hermanos-Rocks: True"
+curl -k -s "https://<REDIRECTOR_DOMAIN.TLD>/Hacker-Hermanos-Rocks" -v -A "Mozilla/5.0" -H "Hacker-Hermanos-Rocks: True"
 ```
