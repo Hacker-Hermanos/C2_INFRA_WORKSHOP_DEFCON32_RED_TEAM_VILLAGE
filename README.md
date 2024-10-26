@@ -1,37 +1,40 @@
-# New Skill Unlocked: C2 Infrastructure Automation
+# ¡Domina la Automatización de Infraestructura C2!
 
-In this hands-on session, we'll demystify the process of deploying and configuring C2 components, such as frameworks, redirectors, and associated compute infrastructure.
+¿Listo para revolucionar tu forma de implementar infraestructura C2? En esta sesión práctica, te mostraremos cómo dominar la implementación de frameworks C2, redirectores y toda la infraestructura necesaria.
 
-You'll learn how to leverage infrastructure as code principles to create consistent, reliable, and secure C2 deployments, all while minimizing the risk of human error.
+Descubrirás cómo la infraestructura como código te permite crear despliegues C2 robustos y seguros, eliminando errores manuales y ahorrando tiempo valioso.
 
-[Link to slides presented](https://docs.google.com/presentation/d/16QZhyyeSVlAqNl6Lin2Es68pUtSRrxMj/edit?usp=drive_link&ouid=113544216782604326804&rtpof=true&sd=true)
+[¡Revisa las diapositivas aquí!](https://docs.google.com/presentation/d/16QZhyyeSVlAqNl6Lin2Es68pUtSRrxMj/edit?usp=drive_link&ouid=113544216782604326804&rtpof=true&sd=true)
 
 ![](./DC32_C2_Infrastructure.png)
 
-## Session goals
+## ¿Qué aprenderás?
 
-- Understand the components of a C2 infrastructure and how they work together
-- Learn how to deploy, configure, and secure C2 components using automation
-- Discover how to design and implement infrastructure as code for consistent and reliable deployments
-- Implement operational security for C2 infrastructure
-- Design scalable and easy-to-understand C2 deployment patterns
+- Dominarás cada componente de la infraestructura C2 y su interacción
+- Crearás despliegues C2 automatizados y seguros
+- Implementarás infraestructura como código para lograr despliegues consistentes
+- Aplicarás las mejores prácticas de seguridad operacional
+- Diseñarás arquitecturas C2 escalables y mantenibles
 
-## Session overview
+## Lo que cubriremos
 
-- Overview of components being deployed
-- Architecture diagram
-- Operationally secure configuration
-  - Restricted ingress traffic
-  - SSH/RSA key restriction
-  - Redirection through VPN interface
-  - C2 server has all ingress access restricted after configuring
-- Scalability
-  - Use of `count` attribute in Terraform allowing us to deploy multiple EC2 instances of each resource compatible with this method
+- Una vista práctica de los componentes clave
+- Arquitectura detallada y su implementación
+- Seguridad desde el primer momento:
+  - Control total del tráfico entrante
+  - Gestión segura de accesos SSH/RSA
+  - Túneles VPN para mayor seguridad
+  - Aislamiento completo del servidor C2 post-configuración
+- Escalabilidad sin complicaciones:
+  - Aprovecha el poder de `count` en Terraform para multiplicar tus recursos EC2
 
-## Requirements
+## Prepara tu entorno
 
-- Windows virtual machine if you're using a macOS or Linux host. [Download a Windows virtual machine](https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/)
-- Terraform installed on your system. [See this documentation page for instructions](https://developer.hashicorp.com/terraform/install?ajs_aid=27f06833-e61f-422f-9656-921b533a86bb&product_intent=terraform)
-- AWS Access Keys generated. [See this documentation page for instructions](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey)
-- AWS Access Keys configured. [See this documentation page for instructions](https://docs.aws.amazon.com/cli/v1/userguide/cli-authentication-user.html#cli-authentication-user-configure.title)
-- Tailscale Auth Key to use in `tailscale` Ansible role. [See this documentation page for instructions](https://tailscale.com/kb/1085/auth-keys)
+¡Asegúrate de tener todo listo antes de empezar!
+
+- Si usas macOS o Linux, configura una VM Windows. [Descárgala aquí](https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/)
+- Instala Terraform - [Guía rápida de instalación](https://developer.hashicorp.com/terraform/install?ajs_aid=27f06833-e61f-422f-9656-921b533a86bb&product_intent=terraform)
+- Configura tus credenciales AWS:
+  - [Crea tus claves de acceso](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey)
+  - [Configúralas en tu sistema](https://docs.aws.amazon.com/cli/v1/userguide/cli-authentication-user.html#cli-authentication-user-configure.title)
+- Obtén tu clave Tailscale para el rol de Ansible - [Instrucciones aquí](https://tailscale.com/kb/1085/auth-keys)

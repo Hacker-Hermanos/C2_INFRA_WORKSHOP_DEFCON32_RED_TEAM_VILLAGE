@@ -1,15 +1,45 @@
 # Exercise 2: Configure 1 C2 Teamserver using Ansible Roles
 
-- Configure C2 Server with a framework (e.g., Mythic C2)
-- Update `vars/main.yml`, `defaults/main.yml` for `Ansible_Roles/tailscale_kali` to add the VPN API key (i.e., `tskey-auth-kXXXXXXX`)
-- Configure C2 Server's VPN for backend communications between C2 server and redirector
-- Update `vars/main.yml`, `defaults/main.yml` for `Ansible_Roles/redirector` to add the VPN IP of the C2 server to the Ansible Role that configures the redirector
-- Replace "`<TAILSCALE_C2_VPN_IP>`" with C2 Tailscale VPN IPv4
+## Pasos principales
+
+- Instala y configura un framework C2 (por ejemplo, Mythic C2) en el servidor
+- Actualiza los archivos `vars/main.yml` y `defaults/main.yml` del rol `Ansible_Roles/tailscale_kali` para incluir tu clave API de VPN (formato: `tskey-auth-kXXXXXXX`)
+- Configura la VPN del servidor C2 para establecer las comunicaciones entre el servidor y el redirector
+- Actualiza los archivos `vars/main.yml` y `defaults/main.yml` del rol `Ansible_Roles/redirector` para añadir la IP de VPN del servidor C2
+- Sustituye "`<TAILSCALE_C2_VPN_IP>`" con la IPv4 de Tailscale de tu servidor C2
 
 `ansible-playbook /path/to/DEFCON32_RT_Village_workshop/Exercise_2/ansible/C2_TeamServer_playbook.yml -i '<C2_SERVER_IP>, ' --private-key /path/to/DEFCON32_RT_Village_workshop/Exercise_1/SSH-Key-name.pem --extra-vars 'kali'`
 
-## Exercise 2 challenges
+## ¡Retos del Ejercicio 2!
 
-1. Develop your own Ansible role to install alternative VPN solutions (i.e., nebula VPN by Slack team)
-2. Implement a configuration that will allow you to restrict ALL ingress traffic to the C2 server while still allowing for C2 traffic redirection. What tool would you use?
-3. Modify the `redirector` ansible role so that it outputs the Mythic credentials
+¡Prepárate para llevar tus habilidades al siguiente nivel! Te proponemos estos emocionantes desafíos:
+
+1. ¡Crea tu propio rol de Ansible para instalar soluciones VPN alternativas! ¿Qué tal si pruebas con Nebula VPN del equipo de Slack?
+
+2. Desarrolla una configuración que restrinja TODO el tráfico de entrada al servidor C2, pero que aún permita la redirección del tráfico C2. ¿Qué herramienta usarías para lograrlo?
+
+3. Mejora el rol `redirector` de Ansible para que muestre las credenciales de Mythic. ¡Será súper útil!
+
+## ¡Retos adicionales! 🚀
+
+¿Listo para llevar tus habilidades al siguiente nivel? Intenta estos desafíos:
+
+1. Crea tu propio rol de Ansible para instalar soluciones VPN alternativas (¡prueba con Nebula VPN del equipo de Slack!)
+2. Desarrolla una configuración que restrinja TODO el tráfico de entrada al servidor C2, manteniendo la redirección del tráfico C2. ¿Qué herramienta usarías?
+3. Mejora el rol `redirector` de Ansible para que muestre las credenciales de Mythic
+
+## Glosario Técnico
+
+- **Rol de Ansible**: Conjunto de tareas reutilizables en Ansible que facilitan la automatización de configuraciones complejas.
+
+- **VPN (Red Privada Virtual)**: Tecnología que crea una conexión segura y encriptada sobre una red menos segura.
+
+- **Nebula VPN**: Solución VPN desarrollada por el equipo de Slack, enfocada en redes mesh y alta escalabilidad.
+
+- **Tráfico de entrada**: Todo el tráfico de red que llega a un servidor o sistema desde el exterior.
+
+- **Servidor C2 (Command & Control)**: Servidor central que controla y coordina las operaciones de seguridad, permitiendo la comunicación con los sistemas objetivo.
+
+- **Redirección de tráfico C2**: Técnica para ocultar la ubicación real del servidor C2 utilizando servidores intermedios.
+
+- **Mythic**: Framework C2 popular conocido por su flexibilidad y capacidades avanzadas en operaciones de seguridad.
