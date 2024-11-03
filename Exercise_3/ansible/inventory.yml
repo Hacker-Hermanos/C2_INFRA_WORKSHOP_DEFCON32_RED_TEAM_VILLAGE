@@ -1,9 +1,19 @@
+# Este es el archivo de inventario de Ansible donde definimos todos los servidores que queremos gestionar
+# El grupo 'all' contiene todos los servidores que vamos a configurar
 all:
+        # Definimos un servidor usando su dirección IP (100.29.22.77)
         100.29.22.77:
+        # ansible_host: Define la dirección IP o nombre de host al que Ansible se conectará
         ansible_host: 100.29.22.77
+        # ansible_become_password: La contraseña que se usará para ejecutar comandos con privilegios elevados (sudo)
         ansible_become_password: kali
+        # ansible_user: El nombre de usuario que Ansible utilizará para conectarse al servidor
         ansible_user: kali
+# La sección 'vars' define variables globales que se aplicarán a todos los servidores
 vars:
+        # ansible_port: El puerto SSH que Ansible usará para conectarse (22 es el puerto estándar)
         ansible_port: 22
+        # ansible_connection: El tipo de conexión que Ansible utilizará (ssh es el método más común)
         ansible_connection: ssh
+        # ansible_python_interpreter: La ruta al intérprete de Python en el servidor remoto
         ansible_python_interpreter: '/usr/bin/python3'

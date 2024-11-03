@@ -1,61 +1,68 @@
 ---
-# tasks file for sliver_kali
+# archivo de tareas para sliver_kali
 
+# Tarea para instalar paquetes necesarios y pre-requisitos
 - name: Loop through expect and pre-requisite packages Installation
   ansible.builtin.apt:
-    update_cache: true
-    pkg: "{{ item }}"
+    update_cache: true  # Actualiza la caché de paquetes antes de la instalación
+    pkg: "{{ item }}"  # Nombre del paquete a instalar
   loop:
-    - gpg
-    - build-essential
-    - mingw-w64
-    - binutils-mingw-w64
-    - g++-mingw-w64
-    - sliver
-    - net-tools
-  become: true
-  become_user: root
+    - gpg  # Paquete para manejar claves GPG
+    - build-essential  # Paquete con herramientas esenciales para compilación
+    - mingw-w64  # Compilador para generar binarios de Windows en Linux
+    - binutils-mingw-w64  # Herramientas de binarios para mingw-w64
+    - g++-mingw-w64  # Compilador de C++ para mingw-w64
+    - sliver  # Paquete de Sliver C2
+    - net-tools  # Herramientas de red
+  become: true  # Ejecuta la tarea con privilegios de superusuario
+  become_user: root  # Usuario con el que se ejecuta la tarea
 
-# Validate expect installation
+# Validar la instalación de los paquetes necesarios
 
+# Tarea para validar que los paquetes necesarios están instalados y actualizados
 - name: Loop through expect and pre-requisite packages validation
   ansible.builtin.apt:
-    pkg: "{{ item }}"
-    state: latest
+    pkg: "{{ item }}"  # Nombre del paquete a validar
+    state: latest  # Asegura que el paquete esté en su última versión
   loop:
-    - gpg
-    - build-essential
-    - mingw-w64
-    - binutils-mingw-w64
-    - g++-mingw-w64
-    - sliver
-    - net-tools
-  become: true
-  become_user: root
+    - gpg  # Paquete para manejar claves GPG
+    - build-essential  # Paquete con herramientas esenciales para compilación
+    - mingw-w64  # Compilador para generar binarios de Windows en Linux
+    - binutils-mingw-w64  # Herramientas de binarios para mingw-w64
+    - g++-mingw-w64  # Compilador de C++ para mingw-w64
+    - sliver  # Paquete de Sliver C2
+    - net-tools  # Herramientas de red
+  become: true  # Ejecuta la tarea con privilegios de superusuario
+  become_user: root  # Usuario con el que se ejecuta la tarea
 
+# Descargar el script de instalación de Sliver (comentado)
 #- name: Download the script
 #  ansible.builtin.get_url:
-#    url: https://sliver.sh/install
-#    dest: /tmp/sliver_install.sh
-#    mode: '0755'  # Set executable permissions on the downloaded script
+#    url: https://sliver.sh/install  # URL del script de instalación
+#    dest: /tmp/sliver_install.sh  # Ruta de destino del script descargado
+#    mode: '0755'  # Establece permisos ejecutables en el script descargado
+
+# Ejecutar el script de instalación con sudo usando bash (comentado)
 #- name: Execute the script with sudo using bash
-#  ansible.builtin.shell: "/bin/bash /tmp/sliver_install.sh"
-#  become: true
-#  become_user: root
-#  register: sliver_install
-#  failed_when: sliver_install  .rc != 0
-#  changed_when: false  # Set changed status to false to avoid changing anything
+#  ansible.builtin.shell: "/bin/bash /tmp/sliver_install.sh"  # Comando para ejecutar el script
+#  become: true  # Ejecuta la tarea con privilegios de superusuario
+#  become_user: root  # Usuario con el que se ejecuta la tarea
+#  register: sliver_install  # Registra el resultado de la ejecución del script
+#  failed_when: sliver_install.rc != 0  # Falla si el código de retorno no es 0
+#  changed_when: false  # Establece el estado de cambio a falso para evitar cambios
 
+# Verificar que sliver-client fue instalado correctamente
 - name: Check sliver-client was installed
-  ansible.builtin.command: "sliver-client version"
-  register: sliver_client_version_check
-  ignore_errors: true  # Ignore errors since we'll check the return code later
-  failed_when: sliver_client_version_check.rc != 0
-  changed_when: false  # Set changed status to false to avoid changing anything
+  ansible.builtin.command: "sliver-client version"  # Comando para verificar la versión de sliver-client
+  register: sliver_client_version_check  # Registra el resultado del comando
+  ignore_errors: true  # Ignora errores ya que verificaremos el código de retorno más tarde
+  failed_when: sliver_client_version_check.rc != 0  # Falla si el código de retorno no es 0
+  changed_when: false  # Establece el estado de cambio a falso para evitar cambios
 
+# Verificar que sliver-server fue instalado correctamente
 - name: Check sliver-server was installed
-  ansible.builtin.command: "sliver-server version"
-  register: sliver_server_version_check
-  ignore_errors: true  # Ignore errors since we'll check the return code later
-  failed_when: sliver_server_version_check.rc != 0
-  changed_when: false  # Set changed status to false to avoid changing anything
+  ansible.builtin.command: "sliver-server version"  # Comando para verificar la versión de sliver-server
+  register: sliver_server_version_check  # Registra el resultado del comando
+  ignore_errors: true  # Ignora errores ya que verificaremos el código de retorno más tarde
+  failed_when: sliver_server_version_check.rc != 0  # Falla si el código de retorno no es 0
+  changed_when: false  # Establece el estado de cambio a falso para evitar cambios

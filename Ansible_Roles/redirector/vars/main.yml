@@ -1,51 +1,107 @@
 ---
-# vars file for redirector Ansible Role
+# Archivo de variables para el Rol de Ansible 'redirector'
+# Este archivo define la configuración principal para un servidor redirector
+# que maneja el tráfico entre dominios y servidores backend
+
 vhosts_dictionary: [
     {
-    # First hostname configuration
+    # Configuración del primer hostname (servidor virtual)
+    # Esta sección define cómo se comportará el redirector para un dominio específico
+        
+        # Dominio principal del redirector (ejemplo: ejemplo.com)
+        # Este es el dominio que los usuarios legítimos utilizarán para acceder al servicio.
+        # Asegúrate de que este dominio esté correctamente configurado en DNS.
         redirector_domain: '<REDIRECTOR_DOMAIN_TLD>',
+        
+        # Dominio señuelo que se mostrará a los visitantes no autorizados
+        # Este dominio se utiliza para engañar a los usuarios no autorizados, 
+        # redirigiéndolos a un sitio diferente. Asegúrate de que este dominio no revele información sensible.
         decoy_domain: '<DECOY_DOMAIN_TLD>',
+        
+        # Puerto para tráfico HTTP no cifrado
+        # El tráfico en este puerto no está cifrado, lo que significa que es susceptible a intercepciones.
+        # Considera redirigir todo el tráfico HTTP a HTTPS para mayor seguridad.
         http_port: <HTTP_PORT>,
+        
+        # Puerto para tráfico HTTPS cifrado
+        # HTTPS cifra el tráfico, protegiendo la información sensible durante la transmisión.
+        # Asegúrate de tener un certificado SSL válido para este puerto.
         https_port: <HTTPS_PORT>,
+        
+        # Firma del servidor que se mostrará en las respuestas HTTP
+        # La firma del servidor puede revelar información sobre el software y la versión que estás usando.
+        # Considera ocultar o modificar esta firma para evitar que los atacantes obtengan información útil.
         server_signature: "<SERVER_SIGNATURE>",
+        
+        # Lista de servidores backend (TeamServers) que recibirán el tráfico redirigido
+        # Estos son los servidores que realmente procesarán las solicitudes después de ser redirigidas.
+        # Asegúrate de que estos servidores estén protegidos y que solo acepten tráfico del redirector.
         backend_teamservers: [
             {
+                # Servidor de producción
+                # Este es el servidor principal que maneja el tráfico en vivo.
+                # Asegúrate de que esté bien protegido y monitoreado.
                 name: '<Prod_C2_TeamServer_TS0>',
                 vpn_ip: '<PROD_C2_VPN_IP>'
             },
             {
+                # Servidor de desarrollo
+                # Este servidor se utiliza para pruebas y desarrollo.
+                # Asegúrate de que no esté expuesto a Internet y que solo sea accesible desde redes seguras.
                 name: '<Dev_C2_TeamServer_TS1>',
                 vpn_ip: '<DEV_C2_VPN_IP>'
             }
         ],
+        
+        # Cabeceras HTTP requeridas para autenticar las peticiones legítimas
+        # Estas cabeceras se utilizan para verificar que las solicitudes provienen de clientes autorizados.
+        # Asegúrate de que estas cabeceras sean difíciles de adivinar y que se mantengan en secreto.
         required_http_header: [
             '<REQUIRED_HTTP_HEADER_1>',
             '<REQUIRED_HTTP_HEADER_2>',
-            # '<ADDITIONAL_HEADER>' # Add additional headers as needed
+            # '<ADDITIONAL_HEADER>' # Añade cabeceras adicionales según sea necesario
         ],
+        
+        # Definiciones de rutas URI que el redirector procesará
+        # Estas son las rutas específicas que el redirector manejará.
+        # Asegúrate de que las rutas no expongan información sensible o funcionalidades no deseadas.
         uri_path_definitions: [
             {
+                # Primera definición de ruta
+                # Define una ruta específica que el redirector debe manejar.
                 name: '<URI_PATH_NAME_1>',
                 path: '<URI_PATH_1>'
             },
             {
+                # Segunda definición de ruta
+                # Otra ruta que el redirector debe manejar.
                 name: '<URI_PATH_NAME_2>',
                 path: '<URI_PATH_2>'
             }
-            # Add more URI path definitions as needed
+            # Añade más definiciones de rutas URI según sea necesario
         ],
+        
+        # Reglas de reescritura para dirigir el tráfico a los servidores backend
+        # Estas reglas determinan cómo se redirige el tráfico a los servidores backend.
+        # Asegúrate de que las reglas sean precisas para evitar redirecciones incorrectas.
         rewrite_rule_filters: [
             {
+                # Regla para el servidor de producción
+                # Esta regla redirige el tráfico al servidor de producción.
+                # Asegúrate de que el puerto y la IP sean correctos.
                 rewritefilter: '<REWRITE_FILTER_1>',
                 backend_forward_port: '<BACKEND_PORT_1>',
                 backend_teamserver: '${PROD_C2_VPN_IP}'
             },
             {
+                # Regla para el servidor de desarrollo
+                # Esta regla redirige el tráfico al servidor de desarrollo.
+                # Asegúrate de que el puerto y la IP sean correctos.
                 rewritefilter: '<REWRITE_FILTER_2>',
                 backend_forward_port: '<BACKEND_PORT_2>',
                 backend_teamserver: '${DEV_C2_VPN_IP}'
             }
-            # Add more filters as needed
+            # Añade más filtros según sea necesario
         ]
     }
 ]

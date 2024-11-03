@@ -1,27 +1,40 @@
+# Tarea 1: Verificar que las variables requeridas estén definidas
+# Esta tarea comprueba que tengamos todas las variables necesarias antes de continuar
+# - 'agent': información sobre el agente de Mythic que vamos a instalar
+# - 'installation_path': la ruta donde instalaremos Mythic
 - name: Assert mandatory variables
   ansible.builtin.assert:
     that:
       - agent is defined
       - installation_path
-  become: true
+  become: true  # Esto permite ejecutar la tarea con privilegios de superusuario (sudo)
+
+# Tarea 2: Instalar los módulos de Mythic desde el repositorio especificado
+# Ejecuta el comando mythic-cli para instalar un agente desde GitHub
+# Solo se ejecuta cuando mythic_result.exists es falso (cuando el agente no está instalado)
 - name: Install Mythic Modules "{{ agent.repo }}"
   ansible.builtin.command: "./mythic-cli install github {{ agent.repo }} {{ agent.branch }} -f"
   when: not mythic_result.exists
   args:
-    chdir: "{{ installation_path }}"
-  become: true
-  become_user: root
-  changed_when: false
+    chdir: "{{ installation_path }}"  # Cambia al directorio de instalación antes de ejecutar
+  become: true  # Ejecuta como superusuario
+  become_user: root  # Específicamente como usuario root
+  changed_when: false  # Indica a Ansible que no considere este paso como un cambio
+
+# Tarea 3: Detener el servicio Mythic usando mythic-cli
+# Esta tarea detiene la instancia de Mythic usando el comando proporcionado por la herramienta
 - name: Stop Mythic using ./mythic-cli
   ansible.builtin.command: "./mythic-cli stop"
   args:
-    chdir: "{{ installation_path }}"
-  become: true
-  changed_when: false
+    chdir: "{{ installation_path }}"  # Ejecuta el comando en el directorio de instalación
+  become: true  # Ejecuta como superusuario
+  changed_when: false  # No marca esta tarea como un cambio en el sistema
 
+# Tarea 4: Detener todos los contenedores de Docker relacionados con Mythic
+# Utiliza docker-compose para detener y eliminar todos los contenedores, incluyendo los huérfanos
 - name: Stop Mythic docker-compose
   ansible.builtin.command: "docker-compose down --remove-orphans"
   args:
-    chdir: "{{ installation_path }}"
-  become: true
-  changed_when: false
+    chdir: "{{ installation_path }}"  # Ejecuta en el directorio donde está el docker-compose.yml
+  become: true  # Ejecuta como superusuario
+  changed_when: false  # No marca esta tarea como un cambio en el sistema

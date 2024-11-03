@@ -1,16 +1,32 @@
-# Terraform
+# Archivos de Terraform
+# Los siguientes archivos son generados automáticamente por Terraform y no deben incluirse en el control de versiones
+# *.tfstate y *.tfstate.* son archivos que contienen el estado actual de tu infraestructura
+# Para principiantes: estos archivos contienen información sensible sobre tu infraestructura y recursos creados
+# No deben compartirse ya que podrían exponer detalles de configuración y secretos
 *.tfstate
 *.tfstate.*
+# *.tfvars son archivos que contienen variables sensibles como contraseñas, tokens o claves API
+# Para principiantes: estos archivos suelen contener información confidencial necesaria para tu infraestructura
 *.tfvars
+# .terraform/ es el directorio donde Terraform almacena todos los plugins y módulos que descarga
+# Para principiantes: este directorio puede ser muy grande y debe regenerarse en cada máquina
 .terraform/
+# Archivo que mantiene las versiones específicas de los proveedores de Terraform
+# Para principiantes: este archivo asegura que todos usen las mismas versiones de los proveedores
 .terraform.lock.hcl
+# Archivo que se genera cuando Terraform encuentra un error y se cierra inesperadamente
+# Para principiantes: útil para diagnóstico de problemas, pero no debe compartirse
 crash.log
+# Archivos que permiten sobrescribir la configuración principal de Terraform
+# Para principiantes: estos archivos son para configuraciones específicas de cada ambiente
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
 
-# Python
+# Archivos de Python
+# Archivos y directorios generados durante la ejecución y compilación de código Python
+# Para principiantes: estos son archivos temporales que Python crea para optimizar el rendimiento
 __pycache__/
 *.py[cod]
 *$py.class
@@ -31,33 +47,47 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+# Directorio del entorno virtual de Python y archivo de variables de entorno
+# Para principiantes: el entorno virtual aísla las dependencias de cada proyecto
 venv/
 .env
 
-# Visual Studio Code
+# Archivos de Visual Studio Code
+# Archivos de configuración específicos del editor de código
+# Para principiantes: estos archivos contienen configuraciones personales del editor
 .vscode/*
+# Excepciones para mantener configuraciones útiles del equipo
+# Para principiantes: estos archivos ayudan a mantener consistencia en el equipo
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
 
-# AWS
+# Archivos de AWS
+# Archivos que contienen configuraciones y credenciales de acceso a AWS
+# Para principiantes: estos archivos contienen información sensible de autenticación
 .aws/
 aws.config
 credentials
 
-# Ansible
+# Archivos de Ansible
+# Archivos generados cuando Ansible reintenta una tarea fallida
+# Para principiantes: estos son archivos temporales de diagnóstico
 *.retry
 
-# Bash
+# Archivos temporales de Bash
+# Archivos generados durante la ejecución de scripts de shell
+# Para principiantes: archivos temporales que no deben guardarse en el repositorio
 *.log
 *.tmp
 *.temp
 *.swp
 *~
 
-# OS generated files
+# Archivos del Sistema Operativo
+# Archivos de metadatos y caché generados por diferentes sistemas operativos
+# Para principiantes: estos archivos no son parte de tu código y no deben versionarse
 .DS_Store
 .DS_Store?
 ._*

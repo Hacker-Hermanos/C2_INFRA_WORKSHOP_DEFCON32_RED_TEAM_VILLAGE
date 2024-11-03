@@ -1,93 +1,122 @@
-# Create a local file containing a shell script to update the AWS EC2 instance hostnames. In the case of this configuration, if this step is not applied, all EC2 VMs will end up named "kali" given that is the default hostname of the AWS AMI we're deploying from.
+# Crear un archivo local que contiene un script de shell para actualizar los nombres de host de las instancias EC2 de AWS. 
+# Esto es necesario porque todas las máquinas virtuales EC2 terminarían llamándose "kali" por defecto, ya que ese es el 
+# nombre de host predeterminado de la imagen AMI de Kali Linux que estamos utilizando.
 resource "local_file" "update_aws_ec2_hostnames" {
+  # El contenido del script que se creará usando la sintaxis heredoc (<<-EOT)
+  # EOT permite escribir texto multilínea de forma más legible
   content  = <<-EOT
   #!/bin/bash
 
-  # Check if the script is run as root
+  # Verifica si el script se ejecuta como root (administrador)
   if [[ $EUID -ne 0 ]]; then
-    echo "This script must be run as root." 
+    echo "Este script debe ejecutarse como root." 
     exit 1
   fi
 
-  # Check if both old and new hostnames are provided as arguments
+  # Verifica si se proporcionaron los dos nombres de host como argumentos
   if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <old_hostname> <new_hostname>"
+    echo "Uso: $0 <nombre_host_antiguo> <nombre_host_nuevo>"
     exit 1
   fi
 
   old_hostname="$1"
   new_hostname="$2"
 
-  # Update /etc/hosts file
+  # Actualiza el archivo /etc/hosts
   sed -i "s/$old_hostname/$new_hostname/g" /etc/hosts
 
-  # Update /etc/hostname file
+  # Actualiza el archivo /etc/hostname
   echo "$new_hostname" > /etc/hostname
 
-  # Update the current hostname
+  # Actualiza el nombre de host actual
   hostnamectl set-hostname "$new_hostname"
 
-  echo "Hostname updated from $old_hostname to $new_hostname."
+  echo "Nombre de host actualizado de $old_hostname a $new_hostname."
 
-  # Restart the system (optional)
-  # Uncomment the line below if you want to restart the system after updating the hostname.
+  # Reinicia el sistema (opcional)
+  # Descomenta la siguiente línea si deseas reiniciar el sistema después de actualizar el nombre de host
   # reboot now
 
   EOT
+  # Ruta donde se guardará el script
   filename = "${path.root}/update_aws_ec2_hostnames.sh"
 }
 
-# Create an AWS EC2 instance
+# Crear una instancia EC2 de AWS que funcionará como servidor de comando y control (C2)
+# Esta es la máquina principal que controlará todas las operaciones
 resource "aws_instance" "C2_TeamServer" {
-  # Kali Linux is provisioned via [Amazon Machine Images (AMI)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html) using [ami attribute of Terraform resource provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#ami)
+  # Configuramos Kali Linux usando una Imagen de Máquina Amazon (AMI)
+  # Una AMI es como una plantilla que contiene el software necesario para crear una nueva instancia EC2
+  # Es similar a una ISO de instalación, pero ya está preconfigurada y optimizada para AWS
   ami = var.use1_ami_kali_234
-  # [EC2 Instance type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html) is defined using a [variable `instance_type_C2_server` declared in `variables.tf` file](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#instance_type) and assigned to the `instance_type` attribute.
+
+  # El tipo de instancia determina el hardware virtual que se asignará (CPU, memoria, red, etc.)
+  # Este valor se define en el archivo variables.tf para mayor flexibilidad
   instance_type = var.instance_type_C2_server
-  key_name      = aws_key_pair.key_pair.key_name
-  # The traffic allowed to ingress and egress the EC2 instance is controlled via [AWS Security Groups](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-rules.html) attached to the [default VPC in the region](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-vpc.html).
-  # SG ID value is assigned to [`vpc_security_group_ids`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#vpc_security_group_ids)
+
+  # Nombre del par de claves SSH que se usará para conectarse a la instancia
+  # Las claves SSH son necesarias para acceder de forma segura a la instancia
+  key_name = aws_key_pair.key_pair.key_name
+
+  # Los grupos de seguridad son como un firewall virtual que controla el tráfico entrante y saliente
+  # Aquí especificamos qué grupo de seguridad se aplicará a esta instancia
   vpc_security_group_ids = [aws_security_group.C2_TeamServer_SG.id]
-  # Count attribute defines the number of EC2 instances that are created. Change this when we want to add more machines and add [count.index] to `subnet_id` and `private_ip` attributes in this resource block.
-  count     = 1
+
+  # Número de instancias a crear. Si necesitas más servidores, aumenta este número
+  count = 1
+
+  # ID de la subred donde se creará la instancia
+  # La subred es una parte de la red virtual (VPC) donde se desplegará la instancia
   subnet_id = aws_subnet.prod-subnet-public-1.id
-  # The [`private_ip`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#private_ip) attribute assigned the [RFC1918 ip addresses](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-instance-addressing.html#concepts-private-addresses) to the resources created. 
-  # Ensure this IP exists in the VPC subnet and it is available. 
-  private_ip                  = var.list_private_ips_C2_teamservers[count.index]
+
+  # Dirección IP privada que se asignará a la instancia
+  # Esta IP debe estar dentro del rango de la subred especificada
+  private_ip = var.list_private_ips_C2_teamservers[count.index]
+
+  # Determina si la instancia debe tener una IP pública
+  # true significa que la instancia será accesible desde Internet
   associate_public_ip_address = true
-  # EC2 instance will only allow access to its metadata using the more secure IMDSv2. 
-  # This security measure helps mitigate certain types of attacks that exploit the less secure IMDSv1.
+
+  # Configuración del servicio de metadatos de la instancia
+  # Esta configuración mejora la seguridad al requerir tokens para acceder a los metadatos
   metadata_options {
-    http_tokens                 = "required" # Enforce the use of IMDSv2; It means that the instance metadata must be accessed using a session token, which is a feature of IMDSv2. IMDSv1, which does not support session tokens, is effectively disabled with this setting.
-    http_put_response_hop_limit = 1          # Recommended setting for IMDSv2. This setting defines the number of allowed network hops to reach the instance metadata service. The value 1 means that only the instance itself can access its own metadata. This is a security best practice to prevent SSRF attacks.
+    # Requiere el uso de IMDSv2, que es más seguro que IMDSv1
+    # IMDSv2 usa tokens de sesión para acceder a los metadatos de la instancia
+    http_tokens = "required"
+    
+    # Limita el número de saltos de red permitidos para acceder al servicio de metadatos
+    # El valor 1 significa que solo la propia instancia puede acceder a sus metadatos
+    http_put_response_hop_limit = 1
   }
 
+  # Configuración del disco principal de la instancia
+  # Especifica el tamaño del disco duro virtual
   root_block_device {
     volume_size = var.volume_size_C2_teamserver
   }
-  # Use this `${count.index + 0}` when making multiple instances
 
+  # Etiquetas para identificar la instancia
+  # El ${count.index + 0} agrega un número al nombre cuando hay múltiples instancias
   tags = {
     Name = "C2-TeamServer-${count.index + 0}"
   }
 
-  # Working ansible-playbook command: `"sleep 90; export ANSIBLE_HOST_KEY_CHECKING=false; ansible-playbook -i 'IPv4,' --private-key [Environment]_[Application]_[Region]_[Role]_[Date]_[UniqueID] 'ansible/C2_TeamServer_playbook.yml' --extra-vars 'kali' "]`
-  #  provisioner "local-exec" {
-  #    command = "sleep 90; export ANSIBLE_HOST_KEY_CHECKING=false; ansible-playbook -i '${self.public_ip},' --private-key ${aws_key_pair.key_pair.key_name}.pem 'ansible/C2_TeamServer_playbook.yml' --extra-vars '${var.ansible_become}' "
-  #  }
-  #   Use the file provisioner to copy the hostname update script to the instance
+  # Comando de ansible comentado para referencia futura:
+  # "sleep 90; export ANSIBLE_HOST_KEY_CHECKING=false; ansible-playbook -i 'IPv4,' --private-key [Ambiente]_[Aplicación]_[Región]_[Rol]_[Fecha]_[IDÚnico] 'ansible/C2_TeamServer_playbook.yml' --extra-vars 'kali' "
+
+  # Provisioner para copiar el script de actualización de hostname a la instancia
   provisioner "file" {
     source      = local_file.update_aws_ec2_hostnames.filename
-    destination = "/tmp/update_aws_ec2_hostnames.sh" # Destination path on the instance
+    destination = "/tmp/update_aws_ec2_hostnames.sh"
     connection {
-      host        = self.public_ip # Use the public IP address of the instance
+      host        = self.public_ip
       type        = "ssh"
       user        = var.kali_ansible_become_user
       private_key = file("${aws_key_pair.key_pair.key_name}.pem")
-      # private_key = file("${var.use1_az4_private_key}.pem") # [Syntax for this attribute was specially problematic. Reference answer](https://stackoverflow.com/a/76766295/9430327)
     }
   }
 
-  # Use the remote-exec provisioner to set the hostname
+  # Provisioner para ejecutar el script y actualizar el hostname
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/update_aws_ec2_hostnames.sh",
@@ -95,76 +124,71 @@ resource "aws_instance" "C2_TeamServer" {
       "sudo /tmp/update_aws_ec2_hostnames.sh $(cat /etc/hostname) $new_hostname"
     ]
     connection {
-      host        = self.public_ip # Use the public IP address of the instance
+      host        = self.public_ip
       type        = "ssh"
       user        = var.kali_ansible_become_user
       private_key = file("${aws_key_pair.key_pair.key_name}.pem")
-      # private_key = file("${var.use1_az4_private_key}.pem")
     }
   }
 }
 
+# Asignar una dirección IP elástica (EIP) al servidor C2
+# Una IP elástica es una dirección IPv4 pública que permanece fija aunque la instancia se reinicie
+# Esto es útil para mantener una dirección IP constante incluso si la instancia se detiene y reinicia
 resource "aws_eip" "C2_TeamServer_eip" {
+  # Número de IPs elásticas a crear
   count    = 1
+  # Asociar la IP elástica con la instancia correspondiente
   instance = aws_instance.C2_TeamServer[count.index].id
-  # vpc      = true # This attribute is deprecated but leaving here for reference
 }
 
+# Crear una instancia EC2 que funcionará como redirector
+# El redirector actúa como intermediario entre Internet y el servidor C2 para mayor seguridad
 resource "aws_instance" "C2_Redirector" {
-  # Kali Linux is provisioned via [Amazon Machine Images (AMI)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html) using [ami attribute of Terraform resource provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#ami)
-  ami = var.use1_ami_kali_234 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html ; https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#ami
-  # [EC2 Instance type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html) is defined using a [variable `instance_type_C2_server` declared in `variables.tf` file](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#instance_type) and assigned to the `instance_type` attribute.
-  instance_type = var.instance_type_C2_redirector # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html ; https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#instance_type
-  key_name      = aws_key_pair.key_pair.key_name
-  # The traffic allowed to ingress and egress the EC2 instance is controlled via [AWS Security Groups](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-rules.html) attached to the [default VPC in the region](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-vpc.html).
-  # SG ID value is assigned to [`vpc_security_group_ids`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#vpc_security_group_ids)
-  vpc_security_group_ids = [aws_security_group.C2_Redirector_SG.id] # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-rules.html ; https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#vpc_security_group_ids
-  # Count attribute defines the number of EC2 instances that are created. Change this when we want to add more machines and add [count.index] to `subnet_id` and `private_ip` attributes in this resource block.
-  count     = 1 # Change this when we want to add more machines and add [count.index] to `subnet_id` and `private_ip` attributes in this resource block.
-  subnet_id = aws_subnet.prod-subnet-public-1.id
-  # The [`private_ip`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#private_ip) attribute assigned the [RFC1918 ip addresses](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-instance-addressing.html#concepts-private-addresses) to the resources created. 
-  # Ensure this IP exists in the VPC subnet and it is available. 
-  private_ip                  = var.list_private_ips_C2_Redirectors[count.index] # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-instance-addressing.html#concepts-private-addresses ; https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#private_ip
-  associate_public_ip_address = true
-  # EC2 instance will only allow access to its metadata using the more secure IMDSv2. 
-  # This security measure helps mitigate certain types of attacks that exploit the less secure IMDSv1.
+  # Usar la misma imagen Kali Linux que el servidor C2
+  ami = var.use1_ami_kali_234
+
+  # Tipo de instancia que define los recursos de hardware
+  instance_type = var.instance_type_C2_redirector
+
+  # Aplicar el grupo de seguridad específico para el redirector
+  vpc_security_group_ids = [aws_security_group.C2_Redirector_SG.id]
+
+  # Crear una sola instancia redirector
+  count     = 1
+
+  # Asignar una IP privada predefinida
+  private_ip = var.list_private_ips_C2_Redirectors[count.index]
+
+  # Configuración de seguridad para los metadatos
   metadata_options {
-    http_tokens                 = "required" # Enforce the use of IMDSv2; It means that the instance metadata must be accessed using a session token, which is a feature of IMDSv2. IMDSv1, which does not support session tokens, is effectively disabled with this setting.
-    http_put_response_hop_limit = 1          # Recommended setting for IMDSv2. This setting defines the number of allowed network hops to reach the instance metadata service. The value 1 means that only the instance itself can access its own metadata. This is a security best practice to prevent SSRF attacks.
+    http_tokens = "required"
+    http_put_response_hop_limit = 1
   }
 
+  # Configurar el tamaño del disco
   root_block_device {
     volume_size = var.volume_size_C2_redirector
   }
-  # Use this `${count.index + 0}` when making multiple instances
+
+  # Etiquetar la instancia para identificación
   tags = {
-    Name = "C2-Redirector-${count.index + 0}" #Use this when making multiple instances
+    Name = "C2-Redirector-${count.index + 0}"
   }
 
-  # Remove access to port 80/TCP once TLS certificate is applied to the machine via ansible playbook
-  #  provisioner "local-exec" {
-  #    command = "aws ec2 revoke-security-group-ingress --group-id ${aws_security_group.C2_Redirector_SG.id} --protocol tcp --port 80 --cidr 0.0.0.0/0 && aws ec2 revoke-security-group-ingress --group-id ${aws_security_group.C2_Redirector_SG.id} --protocol tcp --port 443 --cidr 0.0.0.0/0"
-  #  }
-
-  # Working ansible-playbook command: `"sleep 90; export ANSIBLE_HOST_KEY_CHECKING=false; ansible-playbook -i 'IPv4,' --private-key [Environment]_[Application]_[Region]_[Role]_[Date]_[UniqueID] 'ansible/C2_Redirector_playbook.yml' --extra-vars 'kali' "]`
-  #  provisioner "local-exec" {
-  #    command = "sleep 90; export ANSIBLE_HOST_KEY_CHECKING=false; ansible-playbook -i '${self.public_ip},' --private-key ${aws_key_pair.key_pair.key_name}.pem 'ansible/C2_Redirector_playbook.yml' --extra-vars '${var.ansible_become}' "
-  #  }
-
-  # Use the file provisioner to copy the hostname update script to the instance
+  # Copiar el script de actualización de hostname
   provisioner "file" {
     source      = local_file.update_aws_ec2_hostnames.filename
-    destination = "/tmp/update_aws_ec2_hostnames.sh" # Destination path on the instance
+    destination = "/tmp/update_aws_ec2_hostnames.sh"
     connection {
-      host        = self.public_ip # Use the public IP address of the instance
+      host        = self.public_ip
       type        = "ssh"
       user        = var.kali_ansible_become_user
       private_key = file("${aws_key_pair.key_pair.key_name}.pem")
-      # private_key = file("${var.use1_az4_private_key}.pem") # [Syntax for this attribute was specially problematic. Reference answer](https://stackoverflow.com/a/76766295/9430327)
     }
   }
 
-  # Use the remote-exec provisioner to set the hostname
+  # Ejecutar el script para actualizar el hostname
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/update_aws_ec2_hostnames.sh",
@@ -172,42 +196,17 @@ resource "aws_instance" "C2_Redirector" {
       "sudo /tmp/update_aws_ec2_hostnames.sh $(cat /etc/hostname) $new_hostname"
     ]
     connection {
-      host        = self.public_ip # Use the public IP address of the instance
+      host        = self.public_ip
       type        = "ssh"
       user        = var.kali_ansible_become_user
       private_key = file("${aws_key_pair.key_pair.key_name}.pem")
-      # private_key = file("${var.use1_az4_private_key}.pem")
     }
   }
 }
 
-# Service Quota to increase this AWS Elastic IP soft-limit from 5 is approved (01/16/2024) request ID: d54a2e1066d140c1905751f294787c3f4TeZMIX2
-
+# Asignar una IP elástica al redirector
+# Esto permite mantener una dirección IP fija para el redirector
 resource "aws_eip" "C2_Redirector_eip" {
   count    = 1
   instance = aws_instance.C2_Redirector[count.index].id
-  # vpc      = true # This attribute is deprecated but leaving here for reference
 }
-
-# The local_file resource block creates a local file named apply_ansible_playbook_to_redirectors.sh with the content derived from the local.redirector_public_IPs local value.
-# It has a dependency on the aws_instance.C2_Redirector resource, ensuring it is created or modified before generating the file.
-# The content of the file is generated using a for expression to iterate over each item in local.redirector_public_IPs.
-# For each item, it passes the IP address to the "ansible-playbook -i" argument (inventory).
-# The resulting content will have one `ansible-playbook` command with each public IP.
-# By using the depends_on attribute, we ensure that the local_file resource waits for the aws_instance.C2_Redirector resource to be ready before generating the file.
-
-# resource "local_file" "apply_ansible_playbook_to_teamservers" {
-#   depends_on = [local.C2_TeamServer_public_ips]
-#   content    = <<-EOT
-#   #!/bin/bash
-#   %{for item in local.C2_TeamServer_public_ips~}
-#   export ANSIBLE_HOST_KEY_CHECKING=false
-#   ansible-playbook -i '${item.ip}, ' \
-#   --private-key "${aws_key_pair.key_pair}" \
-#   'ansible/C2_TeamServer_playbook.yml' \
-#   --extra-vars '${var.ansible_become}' 2>1 &
-#   %{endfor~}
-#   wait
-#   EOT
-#   filename   = "${path.root}/apply_ansible_playbook_to_teamservers.sh"
-# }

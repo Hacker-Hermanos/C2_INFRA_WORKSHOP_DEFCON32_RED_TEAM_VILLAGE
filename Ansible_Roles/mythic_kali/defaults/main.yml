@@ -1,40 +1,60 @@
 ---
+# Repositorio principal de Mythic - Esta es la URL desde donde se descargará el código fuente principal
 mythic_repo: https://github.com/its-a-feature/Mythic
+
+# Versión de Mythic a instalar - 'master' significa la última versión disponible
 mythic_version: master
+
+# Ruta donde se instalará Mythic en el sistema - Se creará en /opt/TA0011_C2/Mythic
 installation_path: /opt/TA0011_C2/Mythic
-#server_host: totally legit
-#admin_username: "test_admin_username"
-#default_password: "test_password"
-#operation_name: "test_operation"
+
+# Configuración del servidor (comentado por defecto)
+#server_host: totally legit              # Host del servidor
+#admin_username: "test_admin_username"   # Nombre de usuario del administrador
+#default_password: "test_password"       # Contraseña por defecto
+#operation_name: "test_operation"        # Nombre de la operación
+
+# Usuario del sistema que ejecutará Docker - Es importante para los permisos
 system_user: docker
+
+# Lista de agentes y perfiles C2 disponibles para instalar
 agents:
-#    - repo: https://github.com/MythicAgents/thanatos
+# Agentes comentados (no se instalarán)
+#    - repo: https://github.com/MythicAgents/thanatos    # Agente Thanatos
 #      branch: main
-    - repo: https://github.com/MythicAgents/Athena
+
+# Agentes activos (se instalarán)
+    - repo: https://github.com/MythicAgents/Athena       # Agente Athena - Actualmente habilitado
       branch: main
-#    - repo: https://github.com/MythicAgents/poseidon
+
+#    - repo: https://github.com/MythicAgents/poseidon    # Agente Poseidon
 #      branch: master
-#    - repo: https://github.com/MythicAgents/merlin
+#    - repo: https://github.com/MythicAgents/merlin      # Agente Merlin
 #      branch: main
-#    - repo: https://github.com/MythicAgents/medusa
+#    - repo: https://github.com/MythicAgents/medusa      # Agente Medusa
 #      branch: master
-    - repo: https://github.com/MythicAgents/apollo
+
+    - repo: https://github.com/MythicAgents/apollo       # Agente Apollo - Actualmente habilitado
       branch: master
-#    - repo: https://github.com/MythicC2Profiles/dns
+
+# Perfiles de comunicación C2 (Command and Control)
+#    - repo: https://github.com/MythicC2Profiles/dns     # Perfil DNS
 #      branch: master
-    - repo: https://github.com/MythicC2Profiles/http
+
+    - repo: https://github.com/MythicC2Profiles/http     # Perfil HTTP - Actualmente habilitado
       branch: master
-#    - repo: https://github.com/MythicC2Profiles/dynamichttp
+
+#    - repo: https://github.com/MythicC2Profiles/dynamichttp  # Perfil HTTP Dinámico
 #      branch: master
-#    - repo: https://github.com/MythicC2Profiles/basic_logger
+#    - repo: https://github.com/MythicC2Profiles/basic_logger # Registrador básico
 #      branch: master
-#    - repo: https://github.com/MythicC2Profiles/tcp
+#    - repo: https://github.com/MythicC2Profiles/tcp          # Perfil TCP
 #      branch: main
-#    - repo: https://github.com/MythicC2Profiles/websocket
+#    - repo: https://github.com/MythicC2Profiles/websocket    # Perfil WebSocket
 #      branch: master
-#    - repo: https://github.com/MythicC2Profiles/smb
+#    - repo: https://github.com/MythicC2Profiles/smb          # Perfil SMB
 #      branch: main
-#    - repo: https://github.com/MythicC2Profiles/slack
+#    - repo: https://github.com/MythicC2Profiles/slack        # Perfil Slack
 #      branch: master
-#    - repo: https://github.com/MythicC2Profiles/basic_webhook
+#    - repo: https://github.com/MythicC2Profiles/basic_webhook # Perfil Webhook básico
 #      branch: main

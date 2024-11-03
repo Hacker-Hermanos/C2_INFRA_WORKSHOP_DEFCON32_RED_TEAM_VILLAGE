@@ -1,9 +1,18 @@
+# Este es el archivo de inventario de Ansible que define los servidores que vamos a gestionar
 all:
+        # Definimos el servidor usando su dirección IP de Tailscale (una VPN)
         100.29.22.77:
+        # La dirección IP del host al que Ansible se conectará
         ansible_host: 100.29.22.77
+        # La contraseña que se usará para escalar privilegios (sudo)
         ansible_become_password: kali
+        # El usuario con el que Ansible iniciará sesión en el servidor
         ansible_user: kali
+# Variables globales que aplican a todos los servidores
 vars:
+        # El puerto SSH al que Ansible se conectará (22 es el puerto SSH por defecto)
         ansible_port: 22
+        # El tipo de conexión que usará Ansible (ssh es el método más común)
         ansible_connection: ssh
+        # La ruta al intérprete de Python en el servidor remoto
         ansible_python_interpreter: '/usr/bin/python3'

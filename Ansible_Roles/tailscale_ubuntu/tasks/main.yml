@@ -1,29 +1,22 @@
 ---
-# tasks file for tailscale
-# Validate if Tailscale is already installed with `tailscale -v`
-- name: Validate tailscale is installed
+# Archivo de tareas para tailscale
+
+# Validar si Tailscale ya está instalado con `tailscale -v`
+# Esta tarea ejecuta el comando `tailscale version` y registra el resultado en `tailscale_exists`.
+# Si el código de retorno (rc) es diferente de 0, significa que Tailscale no está instalado.
+# Es importante verificar si Tailscale ya está instalado para evitar reinstalaciones innecesarias.
+- name: Validar si tailscale está instalado
   ansible.builtin.command: tailscale version
   register: tailscale_exists
   failed_when: tailscale_exists.rc|int != 0
-  changed_when: tailscale_exists.rc != 0 # <- Uses the return code to define when the task has changed.
+  changed_when: tailscale_exists.rc != 0
   ignore_errors: true
-# Adds the Tailscale package signing key into `/usr/share/keyrings/` and ubuntu focal repository -
-# (cont.) into `/etc/apt/sources.list.d/tailscale.list` if it is not installed using `curl` and `tee`
-# - name: Add Tailscale package signing key and repository if it is not installed
-#   when: tailscale_exists is failed
-#   ansible.builtin.shell: >
-#     curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.noarmor.gpg |
-#     sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null ;
-#     curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.tailscale-keyring.list |
-#     sudo tee /etc/apt/sources.list.d/tailscale.list
-#   register: repo_and_signing_key_installed
-#   failed_when: repo_and_signing_key_installed.rc|int != 0
-#   changed_when: repo_and_signing_key_installed.rc != 0 # <- Uses the return code to define when the task has changed.
-#   tags:
-#     - tailscale
-#   become: true
-#  If it already exsits, removes the existing Tailscale package using `apt`
-- name: Add Tailscale package signing key if Tailscale is not installed
+
+# Agrega la clave de firma del paquete Tailscale en `/usr/share/keyrings/` si Tailscale no está instalado
+# Esta tarea descarga la clave de firma del paquete Tailscale y la guarda en el directorio especificado.
+# La clave de firma es necesaria para verificar la autenticidad del paquete.
+# Asegúrate de que la clave de firma se descarga de una fuente confiable para evitar comprometer la seguridad del sistema.
+- name: Agregar clave de firma del paquete Tailscale si Tailscale no está instalado
   become: true
   ansible.builtin.get_url:
     url: https://pkgs.tailscale.com/stable/ubuntu/focal.noarmor.gpg
@@ -36,7 +29,11 @@
   tags:
     - tailscale
 
-- name: Add Tailscale repository if Tailscale is not installed
+# Agrega el repositorio de Tailscale en `/etc/apt/sources.list.d/tailscale.list` si Tailscale no está instalado
+# Esta tarea descarga el archivo de lista del repositorio de Tailscale y lo guarda en el directorio especificado.
+# El repositorio es necesario para instalar Tailscale usando `apt`.
+# Asegúrate de que el repositorio se agrega correctamente para evitar problemas durante la instalación del paquete.
+- name: Agregar repositorio de Tailscale si Tailscale no está instalado
   become: true
   ansible.builtin.get_url:
     url: https://pkgs.tailscale.com/stable/ubuntu/focal.tailscale-keyring.list
@@ -49,8 +46,11 @@
   tags:
     - tailscale
 
-- name: Loop through pre-requisite packages removal prior to fresh install
-#  when: tailscale_exists is failed
+# Elimina el paquete Tailscale existente usando `apt` antes de una nueva instalación
+# Esta tarea actualiza la caché de `apt` y elimina el paquete Tailscale si está instalado.
+# Es importante eliminar cualquier versión anterior de Tailscale antes de instalar una nueva.
+# Esto asegura que no haya conflictos entre versiones y que la instalación sea limpia.
+- name: Eliminar paquete Tailscale existente antes de una nueva instalación
   become: true
   ansible.builtin.apt:
     update_cache: true
@@ -61,8 +61,12 @@
   failed_when: tailscale_package_removed is failed
   changed_when: tailscale_package_removed is changed
   ignore_errors: true
-# Validates that the package was uninstalled successfully
-- name: Loop through pre-requisite packages removal validation prior to fresh install
+
+# Valida que el paquete Tailscale fue desinstalado correctamente
+# Esta tarea verifica que el paquete Tailscale no esté instalado.
+# Si el paquete aún está presente, la tarea fallará.
+# Es crucial asegurarse de que el paquete anterior se haya eliminado completamente antes de proceder con la nueva instalación.
+- name: Validar que el paquete Tailscale fue desinstalado correctamente
   become: true
   ansible.builtin.apt:
     name: "{{ item }}"
@@ -71,100 +75,124 @@
   loop:
     - tailscale
   ignore_errors: true
-#    - ansible.builtin.debug:
-#            var: tailscale_is_not_installed
-# Disables automatic start and stops any running Tailscale daemon/service using `systemctl`/`systemd`
-- name: Disable and stop tailscale daemon/service
+
+# Deshabilita el inicio automático y detiene cualquier demonio/servicio de Tailscale en ejecución usando `systemctl`/`systemd`
+# Esta tarea deshabilita y detiene el servicio `tailscaled` si Tailscale no está instalado.
+# Es importante detener cualquier servicio en ejecución antes de realizar cambios en la instalación.
+# Esto previene posibles conflictos o problemas durante la instalación del nuevo paquete.
+- name: Deshabilitar y detener el demonio/servicio tailscale
   when: tailscale_exists is failed
   ansible.builtin.systemd:
     name: tailscaled
     enabled: false
     state: stopped
 
-#    - name: Check if tailscale is up
-#      ansible.builtin.command: tailscale status
-#      register: status
-#      failed_when: status.rc|int < 2
-#      changed_when: false
-#    - name: Ensure machine is not connected to tailscale
-#      ansible.builtin.command: "sudo tailscale logout"
-#      failed_when: false
-#      ignore_errors: false
-#      no_log: true
-#      when:
-#        - status.rc|int != 0
-#      become: true
-#      register: tailscale_is_not_connected
-
-# Installs Taiscale using `apt`
-- name: Loop through pre-requisite packages installation
+# Instala Tailscale usando `apt`
+# Esta tarea actualiza la caché de `apt` e instala el paquete Tailscale.
+# La instalación se realiza solo si Tailscale no está instalado.
+# Asegúrate de que la instalación se realiza correctamente para que el servicio funcione sin problemas.
+- name: Instalar paquete Tailscale
   become: true
   ansible.builtin.apt:
     update_cache: true
     pkg: "{{ item }}"
   loop:
     - tailscale
-# Validates that the package was installed successfully
-- name: Loop through pre-requisite packages validation
+
+# Valida que el paquete Tailscale fue instalado correctamente
+# Esta tarea verifica que el paquete Tailscale esté instalado y actualizado a la última versión.
+# Si la instalación falla, la tarea fallará.
+# Es crucial validar la instalación para asegurarse de que el paquete está funcionando correctamente.
+- name: Validar que el paquete Tailscale fue instalado correctamente
   ansible.builtin.apt:
     name: "{{ item }}"
     state: latest
   register: tailscale_installed
   loop:
     - tailscale
-# Enables Tailscale daemon/service automatic start using `systemctl`/`systemd`
-- name: Enable tailscaled
+
+# Habilita el inicio automático del demonio/servicio de Tailscale usando `systemctl`/`systemd`
+# Esta tarea habilita y inicia el servicio `tailscaled`.
+# Es importante habilitar el servicio para que se inicie automáticamente en el arranque del sistema.
+# Esto asegura que el servicio esté siempre disponible después de reiniciar la máquina.
+- name: Habilitar y iniciar el demonio/servicio tailscale
   become: true
   ansible.builtin.systemd:
     name: tailscaled
     enabled: true
     state: started
-# Validates Tailscale Authentication Key checking that the `tailscale_authkey` is defined and it has a character length of "30" and saves the result of the-
-# (cont.) validation to `authorization` using `register`
-- name: Validate tailscale_authkey
+
+# Valida la Clave de Autenticación de Tailscale verificando que `tailscale_authkey` esté definida y tenga una longitud de 30 caracteres
+# Esta tarea asegura que la clave de autenticación de Tailscale sea válida antes de intentar conectar a la red VPN.
+# La clave de autenticación es necesaria para conectar la máquina a la red VPN de Tailscale.
+# Asegúrate de que la clave de autenticación se mantiene segura y no se comparte públicamente.
+- name: Validar clave de autenticación de Tailscale
   ansible.builtin.assert:
     that:
       - tailscale_authkey is defined
       - "{{ tailscale_authkey | length }} >= 30"
     quiet: false
-    success_msg: 'TAILSCALE_AUTHKEY is valid'
+    success_msg: 'TAILSCALE_AUTHKEY es válida'
   register: authorization
   ignore_errors: true
 
-# Validates if Tailscale network is up with `tailscale status` and saves the result to `status` using `register`
-- name: Check if tailscale is up
+# Valida si la red de Tailscale está activa con `tailscale status`
+# Esta tarea verifica el estado de la red de Tailscale y guarda el resultado en `status`.
+# Si la red no está activa, la tarea fallará.
+# Es importante verificar el estado de la red para asegurarse de que la máquina está conectada correctamente.
+- name: Verificar si la red de Tailscale está activa
   ansible.builtin.command: tailscale status
   register: status
   failed_when: status.rc|int > 1
   changed_when: false
-# Connects the machine that the role is being ran for to the Tailscale's VPN `tailnet` using `tailscale up -authkey {{ tailscale_authkey }}`
-- name: Connect machine to tailscale
-  ansible.builtin.command: "sudo tailscale up -authkey {{ tailscale_authkey }}" # "sudo tailscale up --authkey keystring"
-  no_log: true # Protect auth key for VPN
+
+# Conecta la máquina a la VPN de Tailscale usando `tailscale up -authkey {{ tailscale_authkey }}`
+# Esta tarea conecta la máquina a la red VPN de Tailscale utilizando la clave de autenticación proporcionada.
+# La clave de autenticación debe mantenerse segura y no compartirse públicamente.
+# Asegúrate de que la conexión se realiza correctamente para que la máquina pueda acceder a la red VPN.
+- name: Conectar la máquina a la VPN de Tailscale
+  ansible.builtin.command: "sudo tailscale up -authkey {{ tailscale_authkey }}"
+  no_log: true
   when:
     - status.rc|int != 0
     - not authorization.failed
   become: true
   register: tailscale_node
   changed_when: tailscale_node.rc|int == 0
-# Checks the machine tailnet's IPv4 with `tailscale ip` and saves it to `ip_check` using `register`
-- name: Check ip address
+
+# Verifica la dirección IPv4 de la red de Tailscale con `tailscale ip`
+# Esta tarea obtiene la dirección IP de la red de Tailscale y guarda el resultado en `ip_check`.
+# La dirección IP es necesaria para identificar la máquina en la red VPN.
+# Es importante obtener la dirección IP para verificar que la máquina está conectada correctamente a la red VPN.
+- name: Verificar dirección IP de Tailscale
   ansible.builtin.command: tailscale ip
   register: ip_check
   failed_when: false
   changed_when: false
-# Saves the machine tailnet's IPv4 to `tailscale_ip` using `set_fact` and outputting the value of the `ip_check` saved in the previous step
-- name: Set tailscale_ip fact
+
+# Guarda la dirección IPv4 de la red de Tailscale en `tailscale_ip` y muestra el valor de `ip_check`
+# Esta tarea guarda la dirección IP obtenida en una variable de hecho (`set_fact`) y la muestra en la consola.
+# Es útil para verificar que la máquina está conectada correctamente a la red VPN.
+# Asegúrate de que la dirección IP se guarda correctamente para futuras referencias.
+- name: Guardar dirección IP de Tailscale
   when: ip_check.rc|int == 0
   ansible.builtin.set_fact:
     tailscale_ip: "{{ ip_check.stdout_lines[0] }}"
-# Checks the status of tailscaled and its connections and saves it to `status_check`
-- name: Check status
+
+# Verifica el estado de tailscaled y sus conexiones y guarda el resultado en `status_check`
+# Esta tarea verifica el estado del servicio `tailscaled` y guarda el resultado en `status_check`.
+# Es importante verificar el estado del servicio para asegurarse de que está funcionando correctamente.
+# Esto ayuda a identificar cualquier problema con el servicio y tomar medidas correctivas si es necesario.
+- name: Verificar estado de tailscaled
   ansible.builtin.command: tailscale status
   changed_when: false
   failed_when: status.rc|int > 1
   register: status_check
-# Outputs the value `status_check` to the console
-- name: Output this machine's tailscale IP
+
+# Muestra el valor de `status_check` en la consola
+# Esta tarea muestra el estado del servicio `tailscaled` en la consola.
+# Es útil para verificar que el servicio está funcionando correctamente y que la máquina está conectada a la red VPN.
+# Asegúrate de revisar el estado del servicio para identificar cualquier problema potencial.
+- name: Mostrar IP de Tailscale de esta máquina
   ansible.builtin.debug:
     msg: "{{ status_check.stdout_lines }}"

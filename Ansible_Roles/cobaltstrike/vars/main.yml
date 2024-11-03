@@ -1,8 +1,21 @@
 ---
-# vars file for cobaltstrike
+# Archivo de variables para el rol de cobaltstrike
+# Este archivo contiene las variables principales que se utilizarán en el rol
+
+# Clave de licencia de Cobalt Strike
+# IMPORTANTE: Debe ser reemplazada con una licencia válida de Cobalt Strike
+# El valor actual está vacío y necesita ser configurado
 cs_key: ""
-# Must be replaced by a valid Cobalt Strike License. The value committed to the repository is an example and not a valid license.
-# when in <ROLENAME>/defaults/main.yml this is not needed in <ROLENAME>/vars/main.yml
+
+# Ubicación del perfil de configuración de Cobalt Strike
+# Este archivo contiene la configuración personalizada para el comportamiento del C2
+# La extensión .j2 indica que es una plantilla de Jinja2 que Ansible procesará
 cs_profile_location: ../files/clean.profile.j2
+
+# Nombre del perfil maleable que se utilizará
+# Este perfil define cómo se comportará el tráfico del C2
 cs_profile: 'clean_malleable'
+
+# Directorio donde se almacenarán los servidores de Comando y Control (C2)
+# TA0011 es la referencia MITRE ATT&CK para Comando y Control
 c2_servers_dir: '/opt/TA0011_C2'

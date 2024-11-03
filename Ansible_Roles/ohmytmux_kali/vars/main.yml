@@ -1,4 +1,11 @@
 ---
-# vars file for ohmytmux
+# Archivo de variables para el rol ohmytmux
+# Este archivo contiene las variables principales que se utilizarán en el rol
+
+# Define el usuario remoto que se utilizará para conectarse al sistema
+# En este caso, usamos el usuario 'kali' que es el usuario por defecto en Kali Linux
 remote_user: kali
+
+# Define el usuario que ejecutará las tareas con privilegios elevados (sudo)
+# También usamos el usuario 'kali' para mantener consistencia
 become_user: kali

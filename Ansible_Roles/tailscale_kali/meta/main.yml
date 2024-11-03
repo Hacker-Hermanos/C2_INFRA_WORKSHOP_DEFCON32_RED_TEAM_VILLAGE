@@ -1,28 +1,28 @@
 ---
 galaxy_info:
-  role_name: tailscale_kali
-  description: This role installs Tailscale VPN using the [manual installation steps](https://tailscale.com/download/linux)
-  company: www.hackerhermanos.com
-  namespace: pr0b3r7
-  author: Robert Pimentel - www.linkedin.com/in/pimentelrobert1
-  issue_tracker_url: https://github.com/pr0b3r7/DEFCON32_RT_Village_workshop/issues
-  license: MIT
+  role_name: tailscale_kali  # Nombre del rol en Ansible Galaxy
+  description: Este rol instala Tailscale VPN usando los [pasos de instalación manual](https://tailscale.com/download/linux)  # Descripción del rol y enlace a los pasos de instalación manual
+  company: www.hackerhermanos.com  # Compañía asociada con el rol
+  namespace: pr0b3r7  # Espacio de nombres en Ansible Galaxy
+  author: Robert Pimentel - www.linkedin.com/in/pimentelrobert1  # Autor del rol y enlace a su perfil de LinkedIn
+  issue_tracker_url: https://github.com/pr0b3r7/DEFCON32_RT_Village_workshop/issues  # URL para reportar problemas con el rol
+  license: MIT  # Licencia bajo la cual se distribuye el rol
 
-  min_ansible_version: "2.1"
+  min_ansible_version: "2.1"  # Versión mínima de Ansible requerida para usar este rol
 
-  # If this a Container Enabled role, provide the minimum Ansible Container version.
+  # Si este es un rol habilitado para contenedores, proporcione la versión mínima de Ansible Container.
   # min_ansible_container_version:
 
   #
-  # Provide a list of supported platforms, and for each platform a list of versions.
-  # If you don't wish to enumerate all versions for a particular platform, use 'all'.
-  # To view available platforms and versions (or releases), visit:
+  # Proporcione una lista de plataformas compatibles y, para cada plataforma, una lista de versiones.
+  # Si no desea enumerar todas las versiones para una plataforma en particular, use 'all'.
+  # Para ver las plataformas y versiones disponibles (o lanzamientos), visite:
   # https://galaxy.ansible.com/api/v1/platforms/
   #
   platforms:
-    - name: "Kali"
+    - name: "Kali"  # Nombre de la plataforma compatible
       versions:
-        - all
+        - all  # Todas las versiones de la plataforma son compatibles
   # - name: SomePlatform
   #   versions:
   #   - all
@@ -30,14 +30,14 @@ galaxy_info:
   #   - 7
   #   - 99.99
 
-  galaxy_tags: [tailscale, vpn]
-    # List tags for your role here, one per line. A tag is a keyword that describes
-    # and categorizes the role. Users find roles by searching for tags. Be sure to
-    # remove the '[]' above, if you add tags to this list.
+  galaxy_tags: [tailscale, vpn]  # Lista de etiquetas para el rol en Ansible Galaxy
+    # Enumere las etiquetas para su rol aquí, una por línea. Una etiqueta es una palabra clave que describe
+    # y categoriza el rol. Los usuarios encuentran roles buscando etiquetas. Asegúrese de
+    # eliminar los '[]' arriba, si agrega etiquetas a esta lista.
     #
-    # NOTE: A tag is limited to a single word comprised of alphanumeric characters.
-    #       Maximum 20 tags per role.
+    # NOTA: Una etiqueta está limitada a una sola palabra compuesta de caracteres alfanuméricos.
+    #       Máximo 20 etiquetas por rol.
 
-dependencies: []
-  # List your role dependencies here, one per line. Be sure to remove the '[]' above,
-  # if you add dependencies to this list.
+dependencies: []  # Lista de dependencias del rol
+  # Enumere las dependencias de su rol aquí, una por línea. Asegúrese de eliminar los '[]' arriba,
+  # si agrega dependencias a esta lista.

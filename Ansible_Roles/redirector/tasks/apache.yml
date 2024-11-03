@@ -1,17 +1,23 @@
 ---
-- name: Update apt cache
+# Este playbook configura Apache como servidor web redirector
+
+- name: Actualizar la caché de apt
+  # Actualiza la lista local de paquetes disponibles para asegurar que tenemos la información más reciente
   ansible.builtin.apt:
     update_cache: true
 
-- name: Clear iptables rules
+- name: Limpiar reglas de iptables
+  # Elimina todas las reglas de firewall existentes para comenzar con una configuración limpia
   ansible.builtin.command: iptables -F
   become: true
 
-- name: Allow all traffic to port 80 using iptables
+- name: Permitir todo el tráfico al puerto 80 usando iptables
+  # Configura el firewall para permitir conexiones HTTP entrantes
   ansible.builtin.command: iptables -A INPUT -p tcp --dport 80 -j ACCEPT
   become: true
 
-- name: Install necessary packages
+- name: Instalar paquetes necesarios
+  # Instala Apache2, Certbot para certificados SSL, y el módulo de seguridad de Apache
   ansible.builtin.apt:
     name:
       - apache2
@@ -20,40 +26,46 @@
       - libapache2-mod-security2
     state: present
 
-- name: Create log directory
+- name: Crear directorio de logs
+  # Crea un directorio para almacenar los logs de la configuración de Apache
   ansible.builtin.file:
     path: /var/log/apache_setup
     state: directory
     mode: '0755'
 
-- name: Find all files in the sites-available directory
+- name: Encontrar todos los archivos en el directorio sites-available
+  # Busca todos los archivos de configuración de sitios web existentes
   ansible.builtin.find:
     paths: /etc/apache2/sites-available/
     recurse: true
     file_type: file
   register: found_files
 
-- name: Delete all files in the sites-available directory
+- name: Eliminar todos los archivos en el directorio sites-available
+  # Elimina las configuraciones de sitios web anteriores para empezar desde cero
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ found_files.files }}"
 
-- name: Log message
+- name: Registrar mensaje
+  # Registra el progreso de la configuración en el archivo de log
   ansible.builtin.shell: |
     echo "{{ item }}" >> /var/log/apache_setup/apache_setup.log
   loop:
-    - "Checking for cloud instance boot completion"
-    - "Cloud instance boot completed"
-    - "Updating package index files"
-    - "Setting up Apache"
+    - "Verificando la finalización del arranque de la instancia en la nube"
+    - "Arranque de la instancia en la nube completado"
+    - "Actualizando archivos de índice de paquetes"
+    - "Configurando Apache"
 
-- name: Disable default Apache site
+- name: Deshabilitar sitio Apache por defecto
+  # Desactiva la configuración del sitio web predeterminado de Apache
   ansible.builtin.shell: |
     a2dissite 000-default.conf
   failed_when: false
 
-- name: Enable necessary Apache modules
+- name: Habilitar módulos Apache necesarios
+  # Activa los módulos de Apache requeridos para el redirector
   ansible.builtin.shell: |
     a2enmod "{{ item }}"
   loop:
@@ -69,41 +81,48 @@
     - security2
   failed_when: false
 
-- name: Enable autoindex module to allow directory listings for letsencrypt challenge
+- name: Habilitar módulo autoindex para permitir listados de directorios para el desafío letsencrypt
+  # Activa el módulo que permite listar directorios, necesario para la validación de certificados SSL
   ansible.builtin.shell: |
     a2enmod autoindex
   failed_when: false
 
-- name: Update Apache security config to turn off server signature
+- name: Actualizar configuración de seguridad de Apache para desactivar la firma del servidor
+  # Oculta la información sobre la versión del servidor por seguridad
   ansible.builtin.replace:
     path: /etc/apache2/conf-available/security.conf
     regexp: 'ServerSignature On'
     replace: 'ServerSignature Off'
 
-- name: Add fake server signature to Apache security config
+- name: Agregar firma de servidor falsa a la configuración de seguridad de Apache
+  # Configura una firma personalizada para el servidor
   ansible.builtin.lineinfile:
     path: /etc/apache2/conf-available/security.conf
     line: "SecServerSignature {{ item.server_signature }}"
     create: true
   with_items: "{{ vhosts_dictionary }}"
 
-- name: Update Apache security config to display full server tokens
+- name: Actualizar configuración de seguridad de Apache para mostrar tokens completos del servidor
+  # Configura el nivel de detalle de la información del servidor
   ansible.builtin.replace:
     path: /etc/apache2/conf-available/security.conf
     regexp: 'ServerTokens OS'
     replace: 'ServerTokens Full'
 
-- name: Restart Apache to apply configuration changes
+- name: Reiniciar Apache para aplicar cambios de configuración
+  # Reinicia el servicio para que los cambios surtan efecto
   ansible.builtin.systemd:
     name: apache2
     state: restarted
     enabled: true
 
-- name: Ensure the correct ownership of the webroot directory
+- name: Asegurar la propiedad correcta del directorio webroot
+  # Establece los permisos correctos para el directorio web
   ansible.builtin.command: chown -Rv www-data:www-data /var/www/html/
   become: true
 
-- name: Create webroot directory in "/var/www/html/{{ item.redirector_domain }}"
+- name: Crear directorio webroot en "/var/www/html/{{ item.redirector_domain }}"
+  # Crea el directorio principal para cada dominio redirector
   ansible.builtin.file:
     path: "/var/www/html/{{ item.redirector_domain }}"
     state: directory
@@ -111,7 +130,8 @@
   with_items: "{{ vhosts_dictionary }}"
   failed_when: false
 
-- name: Create logs directory at "/var/www/html/{{ item.redirector_domain }}/logs"
+- name: Crear directorio de logs en "/var/www/html/{{ item.redirector_domain }}/logs"
+  # Crea un directorio de logs específico para cada dominio
   ansible.builtin.file:
     path: "/var/www/html/{{ item.redirector_domain }}/logs"
     state: directory
@@ -119,7 +139,8 @@
   with_items: "{{ vhosts_dictionary }}"
   failed_when: false
 
-- name: Create HTTPS virtual host files
+- name: Crear archivos de host virtual HTTPS
+  # Genera las configuraciones para los sitios HTTPS
   ansible.builtin.template:
     src: pre_cert_apache_sslvhost.conf.j2
     dest: /etc/apache2/sites-available/rtssl_{{ item.redirector_domain }}.conf
@@ -127,7 +148,8 @@
     force: true
   with_items: "{{ vhosts_dictionary }}"
 
-- name: Create HTTP virtual host files
+- name: Crear archivos de host virtual HTTP
+  # Genera las configuraciones para los sitios HTTP
   ansible.builtin.template:
     src: pre_cert_apache_vhost.conf.j2
     dest: /etc/apache2/sites-available/rt_{{ item.redirector_domain }}.conf
@@ -135,7 +157,8 @@
     force: true
   with_items: "{{ vhosts_dictionary }}"
 
-- name: Add Apache modules for SSL, proxy, and headers
+- name: Agregar módulos Apache para SSL, proxy y headers
+  # Activa módulos adicionales necesarios para SSL y proxy
   community.general.apache2_module:
     name: "{{ item }}"
     state: present
@@ -149,17 +172,20 @@
     - deflate
     - headers
 
-- name: Disable unnecessary Apache module cache
+- name: Deshabilitar módulo cache innecesario de Apache
+  # Desactiva el módulo de caché que no se necesita
   community.general.apache2_module:
     name: cache
     state: absent
 
-- name: Enable Apache sites
+- name: Habilitar sitios Apache
+  # Activa las configuraciones de los sitios web creados
   ansible.builtin.shell: |
     a2ensite rt_{{ item.redirector_domain }}
   with_items: "{{ vhosts_dictionary }}"
 
-- name: Restart apache2
+- name: Reiniciar apache2
+  # Reinicia el servidor web para aplicar todos los cambios
   ansible.builtin.systemd_service:
     name: apache2
     state: restarted

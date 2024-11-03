@@ -1,32 +1,28 @@
 # Sliver
-=========
 
 [![sliver_kali](https://img.shields.io/ansible/role/<PENDING_ROLE>)](https://galaxy.ansible.com/pr0b3r7/<PENDING_ROLE>)
 
-This Ansible Role installs Sliver C2 by downloading the latest version using `apt` package manager.
+Este rol de Ansible instala Sliver C2 descargando la última versión usando el gestor de paquetes `apt`.
 
-1. Loop through pre-requisite and `sliver` packages installation
-1. Loop through pre-requisite and `sliver` packages validation
-1. Check `sliver` version (client) as additional validation that Sliver was installed
-1. Check `sliver-server` help as additional validation that Sliver was installed
+1. Bucle a través de la instalación de paquetes pre-requisitos y `sliver`
+1. Bucle a través de la validación de paquetes pre-requisitos y `sliver`
+1. Verificar la versión de `sliver` (cliente) como validación adicional de que Sliver fue instalado
+1. Verificar la ayuda de `sliver-server` como validación adicional de que Sliver fue instalado
 
-Requirements
-------------
+## Requisitos
 
-This role assumes:
-	- You are able to reach your device and ansible is correctly configured, can be tested via: ` ansible -m ping "target_hostname, " -v `
-	- You are running it against a Debian based operating system such as Kali linux or Ubuntu
+Este rol asume:
+- Puedes alcanzar tu dispositivo y ansible está correctamente configurado, se puede probar vía: ` ansible -m ping "target_hostname, " -v `
+- Lo estás ejecutando en un sistema operativo basado en Debian como Kali Linux o Ubuntu
 
-Role Variables
---------------
+## Variables del Rol
 
-- `remote_user`: set to `kali` or a "low privileged username" in the `vars/main.yml` file
-- `become_user`: set to `kali` or a "low privileged username" in the `vars/main.yml` file
+- `remote_user`: configurado a `kali` o un "nombre de usuario con pocos privilegios" en el archivo `vars/main.yml`
+- `become_user`: configurado a `kali` o un "nombre de usuario con pocos privilegios" en el archivo `vars/main.yml`
 
-Dependencies
-------------
+## Dependencias
 
-All dependencies are handled via this Ansible Role
+Todas las dependencias son manejadas a través de este rol de Ansible
 
 - gpg
 - build-essential
@@ -36,10 +32,9 @@ All dependencies are handled via this Ansible Role
 - sliver
 - net-tools
 
-Example Playbook
-----------------
+## Ejemplo de Playbook
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Incluir un ejemplo de cómo usar tu rol (por ejemplo, con variables pasadas como parámetros) siempre es útil para los usuarios también:
 
 ```YAML
 ---
@@ -53,15 +48,14 @@ Including an example of how to use your role (for instance, with variables passe
      - sliver_kali
 ```
 
-## License
+## Licencia
 
-MIT License
+Licencia MIT
 
-## Author Information
+## Información del Autor
 
--------
 
-| Social Media | Link |
+| Redes Sociales | Enlace |
 | --- | --- |
 | LinkedIn | [Robert Pimentel](https://LinkedIn.com/in/pimentelrobert1) |
 | Github | [@pr0b3r7](https://github.com/pr0b3r7) |

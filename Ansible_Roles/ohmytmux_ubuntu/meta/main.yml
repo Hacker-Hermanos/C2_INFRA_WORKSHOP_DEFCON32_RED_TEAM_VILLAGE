@@ -1,22 +1,35 @@
 ---
+# Este archivo meta/main.yml es crucial para definir los metadatos de un rol de Ansible
+# Los metadatos ayudan a otros usuarios a entender y utilizar tu rol correctamente
+
 galaxy_info:
+  # Nombre del rol - este es el nombre que se usará cuando otros quieran instalar tu rol
   role_name: ohmytmux_ubuntu
-  description: Installs oh-my-tmux in ubuntu
+  
+  # Descripción breve que explica qué hace este rol
+  description: Instala oh-my-tmux en ubuntu
+  
+  # Información sobre la compañía o sitio web del autor
   company: www.hackerhermanos.com
-  namespace: pr0b3r7
+    
+  # Información del autor para contacto y atribución
   author: Robert Pimentel - www.linkedin.com/in/pimentelrobert1
+  
+  # URL donde los usuarios pueden reportar problemas o bugs
   issue_tracker_url: https://github.com/pr0b3r7/DEFCON32_RT_Village_workshop/issues
+  
+  # Tipo de licencia bajo la cual se distribuye este rol
   license: MIT
+  
+  # Versión mínima de Ansible requerida para ejecutar este rol
   min_ansible_version: 2.1
 
-  # If this a Container Enabled role, provide the minimum Ansible Container version.
+  # Si este rol está habilitado para contenedores, especifica la versión mínima de Ansible Container
   # min_ansible_container_version:
 
-  #
-  # Provide a list of supported platforms, and for each platform a list of versions.
-  # If you don't wish to enumerate all versions for a particular platform, use 'all'.
-  # To view available platforms and versions (or releases), visit:
-  # https://galaxy.ansible.com/api/v1/platforms/
+  # Plataformas soportadas
+  # Puedes descomentar y modificar esta sección para especificar las plataformas compatibles
+  # Para ver las plataformas disponibles, visita: https://galaxy.ansible.com/api/v1/platforms/
   #
   # platforms:
   # - name: Fedora
@@ -30,14 +43,14 @@ galaxy_info:
   #   - 7
   #   - 99.99
 
+  # Etiquetas que describen tu rol - útiles para búsquedas en Ansible Galaxy
   galaxy_tags: []
-    # List tags for your role here, one per line. A tag is a keyword that describes
-    # and categorizes the role. Users find roles by searching for tags. Be sure to
-    # remove the '[]' above, if you add tags to this list.
-    #
-    # NOTE: A tag is limited to a single word comprised of alphanumeric characters.
-    #       Maximum 20 tags per role.
+  # Las etiquetas ayudan a otros usuarios a encontrar tu rol
+  # Cada etiqueta debe ser una sola palabra con caracteres alfanuméricos
+  # Máximo 20 etiquetas por rol
+  # Elimina los corchetes [] si agregas etiquetas
 
+# Lista de dependencias de otros roles
 dependencies: []
-  # List your role dependencies here, one per line. Be sure to remove the '[]' above,
-  # if you add dependencies to this list.
+# Aquí puedes listar otros roles que deben instalarse antes que este
+# Elimina los corchetes [] si agregas dependencias

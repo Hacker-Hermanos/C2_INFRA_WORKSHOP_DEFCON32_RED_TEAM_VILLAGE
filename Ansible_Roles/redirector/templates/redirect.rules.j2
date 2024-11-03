@@ -1,24 +1,38 @@
-	# Note this version requires Apache 2.4+
+	# Nota: esta versión requiere Apache 2.4 o superior
 	#
-	# Save this file into something like /etc/apache2/redirect.rules.
-	# Then in your site's apache conf file (in /etc/apache2/sites-avaiable/), put this statement somewhere near the bottom
+	# Guarda este archivo en una ubicación como /etc/apache2/redirect.rules.
+	# Luego, en el archivo de configuración de tu sitio Apache (en /etc/apache2/sites-available/), 
+	# coloca esta declaración cerca del final:
 	# 
 	# Include /etc/apache2/redirect.rules
 
-	# Define Redirect Target
+	# Define el dominio objetivo para la redirección
+	# La variable item.decoy_domain se reemplazará con el dominio señuelo configurado en Ansible
 	DEFINE REDIR_TARGET {{ item.decoy_domain }}
-	RewriteEngine On
-	RewriteOptions Inherit
-	# Uncomment the below line for verbose logging, including seeing which rule matched.
-	# LogLevel alert rewrite:trace6
-	# BURN AV BURN
-	# Class A Exclusions. Includes large ranges from Azure & AWS
-	# Cloudfronted requests by default will have a UA of "Amazon Cloudfront". More info here: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/header-caching.html#header-caching-web-device
-	# RewriteCond                             expr                             "-R '245.145.0.0/8'" [OR]
-	# RewriteCond                             %{HTTP_USER_AGENT} 			   "!cloudfront" [NC]
-	# RewriteRule 							  ^(.*)$ 						   %{REQUEST_SCHEME}://${REDIR_TARGET} [R=301]
 
-	# Select AWS CIDRs + AS9009 (M247 Europe SRL - m247.com) and related networks
+	# Activa el motor de reescritura de URLs de Apache
+	RewriteEngine On
+
+	# Hereda las reglas de reescritura del archivo de configuración principal
+	RewriteOptions Inherit
+
+	# Descomenta la siguiente línea para registro detallado, incluyendo qué regla coincidió
+	# LogLevel alert rewrite:trace6
+
+	# Exclusiones de Clase A. Incluye rangos grandes de Azure y AWS
+	# Las peticiones de Cloudfront por defecto tendrán un User-Agent de "Amazon Cloudfront". 
+	# Más información aquí: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/header-caching.html#header-caching-web-device
+	# RewriteCond                             expr                             "-R '245.145.0.0/8'" [OR]
+	# RewriteCond                             %{HTTP_USER_AGENT}               "!cloudfront" [NC]
+	# RewriteRule                             ^(.*)$                           %{REQUEST_SCHEME}://${REDIR_TARGET} [R=301]
+
+	# Rangos CIDR seleccionados de AWS + AS9009 (M247 Europe SRL - m247.com) y redes relacionadas
+	# Las siguientes RewriteCond crean una lista de condiciones para verificar si la IP del visitante
+	# está en alguno de los rangos especificados. Cada línea representa un rango de IPs diferente.
+	# El operador [OR] al final de cada línea significa "O lógico", creando una cadena de condiciones
+	# donde si cualquiera es verdadera, se aplicará la regla de reescritura.
+
+	# Cada RewriteCond usa la expresión "-R" que verifica si la IP del visitante está en el rango especificado
 
 	RewriteCond                             expr                             "-R '1.72.0.0/13'" [OR]
 	RewriteCond                             expr                             "-R '101.108.0.0/15'" [OR]

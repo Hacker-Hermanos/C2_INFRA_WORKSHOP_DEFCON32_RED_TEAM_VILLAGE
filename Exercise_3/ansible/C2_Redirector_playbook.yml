@@ -1,12 +1,25 @@
 ---
+# Este playbook configura un servidor Apache como redirector para operaciones de Command & Control (C2)
+# Un redirector actúa como intermediario entre los sistemas objetivo y el servidor C2 principal
 - name: Configure Apache Redirector for YYYY-MO-OPERATION_NAME-OPERATION_TYPE via Ansible Role
+  # Define que este playbook se ejecutará en todos los hosts del inventario
   hosts: all
+  # Permite escalar privilegios para ejecutar comandos como root (similar a sudo)
   become: true
+  # Especifica el usuario inicial con el que Ansible se conectará al servidor
   remote_user: kali
+  # Recopila información sobre el sistema remoto antes de ejecutar las tareas
   gather_facts: true
+  # Define el método para escalar privilegios (usando el módulo sudo de Ansible)
   become_method: ansible.builtin.sudo
+  # Lista de roles (conjuntos de tareas) que se ejecutarán en orden
   roles:
+    # Instala y configura Tailscale VPN para crear una red privada segura
     - tailscale_kali
+    # Roles opcionales comentados que pueden habilitarse si se necesitan:
+    # Instala Oh My Tmux para mejorar la experiencia con tmux
 #    - ohmytmux_kali
+    # Instala Oh My Zsh para mejorar la shell zsh
 #    - ohmyzsh_kali
+    # Configura Apache como redirector para el tráfico C2
     - redirector

@@ -1,17 +1,38 @@
 ---
+# Este archivo contiene los metadatos para el rol de Ansible 'mythic_kali'
 galaxy_info:
+  # Nombre del rol que se utilizará en Ansible Galaxy
   role_name: mythic_kali
+  
+  # Descripción breve del propósito del rol - instala el servidor Mythic C2
   description: Installs Mythic C2 TeamServer
+  
+  # Información de la compañía/sitio web
   company: www.hackerhermanos.com
+  
+  # Espacio de nombres único para el rol en Ansible Galaxy
   namespace: pr0b3r7
+  
+  # Información del autor y su perfil profesional
   author: Robert Pimentel - www.linkedin.com/in/pimentelrobert1
+  
+  # URL donde los usuarios pueden reportar problemas
   issue_tracker_url: https://github.com/pr0b3r7/DEFCON32_RT_Village_workshop/issues
+  
+  # Tipo de licencia del código
   license: MIT
+  
+  # Versión mínima requerida de Ansible para ejecutar este rol
   min_ansible_version: "2.1"
+  
+  # Plataformas soportadas por este rol
   platforms:
     - name: Kali
       versions:
+        # Versión específica de Kali Linux soportada
         - 6.1.0-kali5-amd64
+  
+  # Etiquetas para categorizar y buscar este rol en Ansible Galaxy
   galaxy_tags:
     - mythic
     - c2

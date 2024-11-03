@@ -1,59 +1,54 @@
-Role Name
-=========
+# ohmyzsh_ubuntu
 
-This ansible role customizes the [ZSH](https://www.kali.org/tools/zsh/) (that comes installed by default installed into ubuntu) by making the following changes:
+Este rol de Ansible personaliza el [ZSH](https://www.kali.org/tools/zsh/) (que viene instalado por defecto en Ubuntu) realizando los siguientes cambios:
 
-- Downloads installer for [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh) into `/tmp/install.sh` if not installed already
-- Installs [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh) using the [manual installation script](https://github.com/ohmyzsh/ohmyzsh) downloaded into `/tmp/install.sh`. More info can be found on its [website](https://ohmyz.sh/) for low privileged user and root
-- Checks that oh-my-zsh was correctly installed for low privileged user and root
-- Installs the recommended fonts ["MesloLGS"](https://github.com/romkatv/powerlevel10k-media) according to the [manual installation method](https://github.com/romkatv/powerlevel10k) detailed in the README for [powerlevel10k](https://github.com/romkatv/powerlevel10k) and updates font cache to enable the fonts in the system
-- Installs [powerlevel10k](https://github.com/romkatv/powerlevel10k) ZSH theme
+- Descarga el instalador de [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh) en `/tmp/install.sh` si no está instalado ya
+- Instala [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh) usando el [script de instalación manual](https://github.com/ohmyzsh/ohmyzsh) descargado en `/tmp/install.sh`. Más información se puede encontrar en su [sitio web](https://ohmyz.sh/) para el usuario con privilegios limitados y root
+- Verifica que oh-my-zsh fue instalado correctamente para el usuario con privilegios limitados y root
+- Instala las fuentes recomendadas ["MesloLGS"](https://github.com/romkatv/powerlevel10k-media) según el [método de instalación manual](https://github.com/romkatv/powerlevel10k) detallado en el README de [powerlevel10k](https://github.com/romkatv/powerlevel10k) y actualiza la caché de fuentes para habilitar las fuentes en el sistema
+- Instala el tema ZSH [powerlevel10k](https://github.com/romkatv/powerlevel10k)
 
-- Installs the following plugins into oh-my-zsh for low privileged user and root
+- Instala los siguientes plugins en oh-my-zsh para el usuario con privilegios limitados y root:
 
-  - Installs cargo for rust packages such as exa, lsd and bat
-  - Installs exa, lsd and bat
-  - Creates a directory under `.oh-my-zsh/custom/plugins/sudo` and downloads the [sudo plugin](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/sudo) `.zsh` script into it
-  - Installs [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting) `.zsh` script under `.oh-my-zsh/custom/plugins/zsh-syntax-highlighting`
-  - Installs [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions.git) `.zsh` script under `.oh-my-zsh/custom/plugins/zsh-autosuggestions`
-  - Installs [zsh-history-substring-search](https://github.com/zsh-users/zsh-history-substring-search.git) `.zsh` script under `.oh-my-zsh/custom/plugins/zsh-history-substring-search`
-  - Installs [zsh-autocomplete](https://github.com/marlonrichert/zsh-autocomplete.git) `.zsh` script under `.oh-my-zsh/custom/plugins/zsh-autocomplete`
-  - Installs [fzf-zsh-plugin](https://github.com/unixorn/fzf-zsh-plugin.git) `.zsh` script under `.oh-my-zsh/custom/plugins/fzf-zsh-plugin`
+  - Instala cargo para paquetes de rust como exa, lsd y bat
+  - Instala exa, lsd y bat
+  - Crea un directorio bajo `.oh-my-zsh/custom/plugins/sudo` y descarga el [plugin sudo](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/sudo) `.zsh` script en él
+  - Instala el script `.zsh` de [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting) bajo `.oh-my-zsh/custom/plugins/zsh-syntax-highlighting`
+  - Instala el script `.zsh` de [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions.git) bajo `.oh-my-zsh/custom/plugins/zsh-autosuggestions`
+  - Instala el script `.zsh` de [zsh-history-substring-search](https://github.com/zsh-users/zsh-history-substring-search.git) bajo `.oh-my-zsh/custom/plugins/zsh-history-substring-search`
+  - Instala el script `.zsh` de [zsh-autocomplete](https://github.com/marlonrichert/zsh-autocomplete.git) bajo `.oh-my-zsh/custom/plugins/zsh-autocomplete`
+  - Instala el script `.zsh` de [fzf-zsh-plugin](https://github.com/unixorn/fzf-zsh-plugin.git) bajo `.oh-my-zsh/custom/plugins/fzf-zsh-plugin`
 
-- Installs the following theme(s) into `.oh-my-zsh/custom/themes/`
+- Instala el/los siguiente(s) tema(s) en `.oh-my-zsh/custom/themes/`:
 
   - [powerlevel10k](https://github.com/romkatv/powerlevel10k.git)
 
-- Install custom .zshrc containing functions, aliases, custom/themes and custom/plugins directories to /home/low_priv_user/.zshrc and /root/.zshrc
+- Instala un archivo .zshrc personalizado que contiene funciones, alias, directorios custom/themes y custom/plugins en /home/low_priv_user/.zshrc y /root/.zshrc
 
-Requirements
-------------
+## Requisitos
 
-To create other roles like this, follow [this](https://redhatgov.io/workshops/ansible_automation/exercise1.5/) procedure (linked).
+Para crear otros roles como este, sigue [este](https://redhatgov.io/workshops/ansible_automation/exercise1.5/) procedimiento (enlazado).
 
-This role assumes:
+Este rol asume:
 
-- You are able to reach your device and ansible is correctly configured, can be tested via: ` ansible -m ping "target_hostname, " -v `
-- you are running it against a Debian based operating system such as Kali linux or Ubuntu
-- `git` is installed in this system and there is an internet connection available to download the packages and repository files referenced in the role
-- you are setting the `remote_user` variable to `ubuntu` or a "low privileged username" in the `vars/main.yml` file
+- Puedes alcanzar tu dispositivo y ansible está correctamente configurado, puede probarse mediante: ` ansible -m ping "target_hostname, " -v `
+- Lo estás ejecutando en un sistema operativo basado en Debian como Kali linux o Ubuntu
+- `git` está instalado en este sistema y hay una conexión a internet disponible para descargar los paquetes y archivos del repositorio referenciados en el rol
+- Estás configurando la variable `remote_user` como `ubuntu` o un "nombre de usuario con privilegios limitados" en el archivo `vars/main.yml`
 
-Role Variables
---------------
+## Variables del Rol
 
-- `remote_user`: set to `ubuntu` or a "low privileged username" in the `vars/main.yml` file
-- `become_user`: set to `ubuntu` or a "low privileged username" in the `vars/main.yml` file
+- `remote_user`: configurar como `ubuntu` o un "nombre de usuario con privilegios limitados" en el archivo `vars/main.yml`
+- `become_user`: configurar como `ubuntu` o un "nombre de usuario con privilegios limitados" en el archivo `vars/main.yml`
 
-Dependencies
-------------
+## Dependencias
 
-- variables defined above and set to valid values
-- `git` installed in the Ubuntu or Kali based system (can be installed via apt install git -y in a system with Advanced Package Tool "apt" installed)
+- Variables definidas arriba y configuradas con valores válidos
+- `git` instalado en el sistema Ubuntu o Kali (puede instalarse vía apt install git -y en un sistema con Advanced Package Tool "apt" instalado)
 
-Example Playbook
-----------------
+## Ejemplo de Playbook
 
-Main playbook or task YML file:
+Archivo YML principal del playbook o tarea:
 
 ```YML
 ---
@@ -65,7 +60,7 @@ Main playbook or task YML file:
     - ohmyzsh
 ```
 
-Contents of `vars/main.yml` this role was written with:
+Contenido de `vars/main.yml` que se usó para escribir este rol:
 
 ```YML
 ---
@@ -76,9 +71,9 @@ become_user: ubuntu
 
 ## License
 
-MIT License
+Licencia MIT
 
-## Author Information
+## Información del autor original
 
 -------
 

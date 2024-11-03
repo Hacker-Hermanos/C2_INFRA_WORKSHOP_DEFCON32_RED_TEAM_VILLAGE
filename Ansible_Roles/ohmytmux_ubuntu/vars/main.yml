@@ -1,4 +1,12 @@
 ---
-# vars file for ohmytmux
+# Archivo de variables para el rol ohmytmux
+# Este archivo contiene las variables principales que se utilizarán en el rol
+
+# Define el usuario remoto que se utilizará para conectarse al servidor
+# En este caso, usamos el usuario 'ubuntu' que es común en instancias de AWS EC2 con Ubuntu
 remote_user: ubuntu
+
+# Define el usuario que ejecutará las tareas con privilegios elevados
+# Este usuario debe tener permisos sudo en el sistema
+# Aquí usamos el mismo usuario 'ubuntu' para mantener la consistencia
 become_user: ubuntu

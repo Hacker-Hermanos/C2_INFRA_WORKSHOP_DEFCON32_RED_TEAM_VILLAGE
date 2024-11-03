@@ -1,3 +1,9 @@
 ---
-# vars file for tailscale
+# archivo de variables para tailscale
+
+# Clave de autenticación para Tailscale
+# Esta clave es necesaria para conectar la máquina a la red VPN de Tailscale.
+# Asegúrate de mantener esta clave segura y no compartirla públicamente.
+# La clave debe tener al menos 30 caracteres para ser válida.
+# Si la clave es comprometida, puede permitir el acceso no autorizado a la red VPN.
 tailscale_authkey: "tskey-auth-XXXX"

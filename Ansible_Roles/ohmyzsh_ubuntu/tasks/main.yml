@@ -1,16 +1,18 @@
 ---
-# tasks file for oh-my-zsh
+# archivo de tareas para oh-my-zsh
 
-# Install fc-cache via apt so custom fonts can be added to the OS
+# Instalar fc-cache a través de apt para que se puedan agregar fuentes personalizadas al sistema operativo
 
-- name: Loop through fontconfig (fc-cache) package installation
+- name: Iterar a través de la instalación del paquete fontconfig (fc-cache)
   ansible.builtin.apt:
     update_cache: true
     pkg: "{{ item }}"
   loop:
     - fontconfig
     - build-essential
-- name: Loop through fontconfig (fc-cache) package validation
+# Validar que los paquetes fontconfig (fc-cache) estén instalados y actualizados a la última versión
+
+- name: Iterar a través de la validación del paquete fontconfig (fc-cache)
   ansible.builtin.apt:
     pkg: "{{ item }}"
     state: latest
@@ -19,12 +21,16 @@
     - build-essential
 ### Cargo proglang
 
-- name: Validate Cargo is installed at low privileged user level
+# Validar que Cargo esté instalado a nivel de usuario con privilegios bajos
+
+- name: Validar que Cargo esté instalado a nivel de usuario con privilegios bajos
   shell: command -v cargo
   register: cargo_exists
   ignore_errors: true
   no_log: true
-- name: Download cargo Installer to /tmp/sh.rustup.rs if it is not installed
+# Descargar el instalador de Cargo en /tmp/sh.rustup.rs si no está instalado
+
+- name: Descargar el instalador de Cargo en /tmp/sh.rustup.rs si no está instalado
   when: cargo_exists is failed
   get_url:
     url: https://sh.rustup.rs
@@ -35,66 +41,88 @@
     - rust
   become: true
 
-- name: install rust/cargo for root
+# Instalar rust/cargo para el usuario root
+
+- name: Instalar rust/cargo para el usuario root
   when: cargo_exists is failed
   shell: ' /tmp/sh.rustup.rs -y  '
   tags:
     - rust
   become: true
   register: cargo_exists_as_root
-- name: Debug cargo was installed for root
+# Depurar que Cargo fue instalado para root
+
+- name: Depurar que Cargo fue instalado para root
   debug:
     msg: '{{ cargo_exists_as_root }}'
-- name: source $HOME/.cargo/env
+# Fuente $HOME/.cargo/env
+
+- name: Fuente $HOME/.cargo/env
   shell: source $HOME/.cargo/env
   become: true
   args:
     executable: /bin/bash
-- name: install lsd with cargo for root
+# Instalar lsd con cargo para root
+
+- name: Instalar lsd con cargo para root
   shell: source $HOME/.cargo/env && cargo install lsd
   become: true
   args:
     executable: /bin/bash
-- name: install bat with cargo for root
+# Instalar bat con cargo para root
+
+- name: Instalar bat con cargo para root
   shell: source $HOME/.cargo/env && cargo install bat
   become: true
   args:
     executable: /bin/bash
-- name: install exa with cargo for root
+# Instalar exa con cargo para root
+
+- name: Instalar exa con cargo para root
   shell: source $HOME/.cargo/env && cargo install exa
   become: true
   args:
     executable: /bin/bash
 
-- name: install rust/cargo for low privileged user
+# Instalar rust/cargo para usuario con privilegios bajos
+
+- name: Instalar rust/cargo para usuario con privilegios bajos
   when: cargo_exists is failed
   shell: ' /tmp/sh.rustup.rs -y  '
   tags:
     - rust
   become: false
   register: cargo_exists_as_user
-- name: Debug cargo was installed for root
+# Depurar que Cargo fue instalado para usuario con privilegios bajos
+
+- name: Depurar que Cargo fue instalado para usuario con privilegios bajos
   debug:
     msg: '{{ cargo_exists_as_user }}'
-- name: install lsd with cargo for low privileged user
+# Instalar lsd con cargo para usuario con privilegios bajos
+
+- name: Instalar lsd con cargo para usuario con privilegios bajos
   shell: source $HOME/.cargo/env && cargo install lsd
   become: false
   args:
     executable: /bin/bash
-- name: install bat with cargo for low privileged user
+# Instalar bat con cargo para usuario con privilegios bajos
+
+- name: Instalar bat con cargo para usuario con privilegios bajos
   shell: source $HOME/.cargo/env && cargo install bat
   become: false
   args:
     executable: /bin/bash
-- name: install exa with cargo for low privileged user
+# Instalar exa con cargo para usuario con privilegios bajos
+
+- name: Instalar exa con cargo para usuario con privilegios bajos
   shell: source $HOME/.cargo/env && cargo install exa
   become: false
   args:
     executable: /bin/bash
 
-# Downloads installer for [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh) into `/tmp/install.sh` if not installed already
+# Descargar el instalador de oh-my-zsh en /tmp/install.sh si no está instalado
 
-- name: Download oh-my-zsh installer to /tmp/install.sh if it is not installed
+- name: Descargar el instalador de oh-my-zsh en /tmp/install.sh si no está instalado
   ansible.builtin.get_url:
     url: https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
     dest: /tmp/install.sh
@@ -103,26 +131,24 @@
   tags:
     - oh_my_zsh
 
-# Installs [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh) using the  -
-# (cont.) [manual installation script](https://github.com/ohmyzsh/ohmyzsh) downloaded into `/tmp/install.sh`.
-# (cont.) More info can be found on its [website](https://ohmyz.sh/) for low privileged user and root
+# Instalar oh-my-zsh usando el script de instalación manual descargado en `/tmp/install.sh` para usuario con privilegios bajos y root
 
-- name: Installs oh-my-zsh using the manual installation script downloaded into `/tmp/install.sh`
+- name: Instalar oh-my-zsh usando el script de instalación manual descargado en `/tmp/install.sh`
   ansible.builtin.shell: ' /tmp/install.sh '
   tags:
     - oh_my_zsh
   ignore_errors: true
   register: oh_my_zsh_as_ubuntu
 
-# Checks that oh-my-zsh was correctly installed for low privileged user
+# Verificar que oh-my-zsh se haya instalado correctamente para usuario con privilegios bajos
 
-- name: Checks that oh-my-zsh was correctly installed for low privileged user
+- name: Verificar que oh-my-zsh se haya instalado correctamente para usuario con privilegios bajos
   ansible.builtin.debug:
     msg: '{{ oh_my_zsh_as_ubuntu }}'
 
-# Download oh-my-zsh installer to /tmp/install.sh if it is not installed
+# Descargar el instalador de oh-my-zsh en /tmp/install.sh si no está instalado
 
-- name: Download oh-my-zsh installer to /tmp/install.sh if it is not installed
+- name: Descargar el instalador de oh-my-zsh en /tmp/install.sh si no está instalado
   when: oh_my_zsh_as_ubuntu is failed
   ansible.builtin.get_url:
     url: https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
@@ -133,10 +159,9 @@
     - oh_my_zsh
   become: true
 
-# Installs [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh) using the  -
-# (cont.) [manual installation script](https://github.com/ohmyzsh/ohmyzsh) downloaded into `/tmp/install.sh`.
+# Instalar oh-my-zsh usando el script de instalación manual descargado en `/tmp/install.sh` para root
 
-- name: Installs oh-my-zsh using the manual installation script downloaded into `/tmp/install.sh` for root
+- name: Instalar oh-my-zsh usando el script de instalación manual descargado en `/tmp/install.sh` para root
   ansible.builtin.shell: 'bash /tmp/install.sh '
   tags:
     - oh_my_zsh
@@ -144,211 +169,211 @@
   register: oh_my_zsh_as_root
   ignore_errors: true
 
-# Checks that oh-my-zsh was correctly installed for root
+# Verificar que oh-my-zsh se haya instalado correctamente para root
 
-- name: Checks that oh-my-zsh was correctly installed for root
+- name: Verificar que oh-my-zsh se haya instalado correctamente para root
   ansible.builtin.debug:
     msg: '{{ oh_my_zsh_as_root }}'
 
-# Installs the recommended fonts ["MesloLGS"](https://github.com/romkatv/powerlevel10k-media) -
-# (cont.)  according to the  -
-# (cont.) [manual installation method](https://github.com/romkatv/powerlevel10k)  -
-# (cont.) detailed in the README for [powerlevel10k](https://github.com/romkatv/powerlevel10k)
+# Instalar las fuentes recomendadas ["MesloLGS"](https://github.com/romkatv/powerlevel10k-media) según el método de instalación manual detallado en el README de [powerlevel10k](https://github.com/romkatv/powerlevel10k)
 
-- name: Download MesloLGS NF Fonts Regular
+- name: Descargar MesloLGS NF Fonts Regular
   ansible.builtin.get_url:
     url: 'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf'
     dest: /usr/share/fonts/
 
-- name: Download MesloLGS NF Fonts Bold
+- name: Descargar MesloLGS NF Fonts Bold
   ansible.builtin.get_url:
     url: 'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf'
     dest: /usr/share/fonts/
 
-- name: Download MesloLGS NF Fonts Italic
+- name: Descargar MesloLGS NF Fonts Italic
   ansible.builtin.get_url:
     url: 'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf'
     dest: /usr/share/fonts/
 
-- name: Download MesloLGS NF Fonts Bold Italic
+- name: Descargar MesloLGS NF Fonts Bold Italic
   ansible.builtin.get_url:
     url: 'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf'
     dest: /usr/share/fonts/
 
-# Updates font cache to enable the fonts in the system
+# Actualizar la caché de fuentes para habilitar las fuentes en el sistema
 
-- name: Update font-cache
+- name: Actualizar la caché de fuentes
   ansible.builtin.shell: fc-cache -fv
 
-# OMZ Custom Theme and Plugins
-## Add custom theme and plugins to user .oh-my-zsh custom/themes and custom/plugins directories
+# Tema y plugins personalizados de OMZ
+## Agregar tema y plugins personalizados al directorio .oh-my-zsh custom/themes y custom/plugins del usuario
 
-# Installs the [sudo plugin](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/sudo) into  -
-# (cont.) .oh-my-zsh/custom/plugins/sudo for low privileged user and root
+# Instalar el [plugin sudo](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/sudo) en .oh-my-zsh/custom/plugins/sudo para usuario con privilegios bajos y root
 
-# Creates the [sudo plugin](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/sudo) directory into  -
-# (cont.) .oh-my-zsh/custom/plugins/sudo for low privileged user
+# Crear el directorio del [plugin sudo](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/sudo) en .oh-my-zsh/custom/plugins/sudo para usuario con privilegios bajos
 
-- name: Creates the [sudo plugin](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/sudo) directory into .oh-my-zsh/custom/plugins/sudo for low priv user
+- name: Crear el directorio del [plugin sudo](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/sudo) en .oh-my-zsh/custom/plugins/sudo para usuario con privilegios bajos
   ansible.builtin.file:
     path: "$HOME/.oh-my-zsh/custom/plugins/sudo/"
     state: directory
     mode: '0755'
   become_user: ubuntu
 
-# Downloads the [sudo plugin .zsh file](https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/sudo/sudo.plugin.zsh) -
-# (cont.) into the directory created in .oh-my-zsh/custom/plugins/sudo for low privileged user
+# Descargar el archivo .zsh del [plugin sudo](https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/sudo/sudo.plugin.zsh) en el directorio creado en .oh-my-zsh/custom/plugins/sudo para usuario con privilegios bajos
 
-- name: Downloads the sudo plugin .zsh file into `.oh-my-zsh/custom/plugins/sudo` for low privileged user
+- name: Descargar el archivo .zsh del plugin sudo en `.oh-my-zsh/custom/plugins/sudo` para usuario con privilegios bajos
   ansible.builtin.get_url:
     url: "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/sudo/sudo.plugin.zsh"
     dest: "$HOME/.oh-my-zsh/custom/plugins/sudo/sudo.plugin.zsh"
     mode: '0755'
   become_user: ubuntu
 
-# Creates the [sudo plugin](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/sudo) directory into  -
-# (cont.) .oh-my-zsh/custom/plugins/sudo for root
+# Crear el directorio del [plugin sudo](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/sudo) en .oh-my-zsh/custom/plugins/sudo para root
 
-- name: Creates the [sudo plugin](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/sudo) directory into .oh-my-zsh/custom/plugins/sudo for root
+- name: Crear el directorio del [plugin sudo](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/sudo) en .oh-my-zsh/custom/plugins/sudo para root
   ansible.builtin.file:
     path: "$HOME/.oh-my-zsh/custom/plugins/sudo/"
     state: directory
     mode: '0755'
   become: true
 
-# Downloads the [sudo plugin .zsh file](https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/sudo/sudo.plugin.zsh) -
-# (cont.) into the directory created in .oh-my-zsh/custom/plugins/sudo for root
+# Descargar el archivo .zsh del [plugin sudo](https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/sudo/sudo.plugin.zsh) en el directorio creado en .oh-my-zsh/custom/plugins/sudo para root
 
-- name: Downloads the sudo plugin .zsh file into `.oh-my-zsh/custom/plugins/sudo` for root
+- name: Descargar el archivo .zsh del plugin sudo en `.oh-my-zsh/custom/plugins/sudo` para root
   ansible.builtin.get_url:
     url: "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/sudo/sudo.plugin.zsh"
     dest: "$HOME/.oh-my-zsh/custom/plugins/sudo/sudo.plugin.zsh"
     mode: '0755'
   become: true
 
-# Installs the [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting) into -
-# (cont.) $HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting for low privileged user
+# Instalar el [plugin zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting) en $HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting para usuario con privilegios bajos
 
-- name: Installs the zsh-syntax-highlighting plugin into $HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting for low privileged user
+- name: Instalar el plugin zsh-syntax-highlighting en $HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting para usuario con privilegios bajos
   become_user: ubuntu
   ansible.builtin.git:
     repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
     dest: $HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 
-# Installs the [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting) into -
-# (cont.) /root/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting directory for root
+# Instalar el [plugin zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting) en /root/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting para root
 
-- name: Installs the zsh-syntax-highlighting plugin into /root/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting for root
+- name: Instalar el plugin zsh-syntax-highlighting en /root/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting para root
   ansible.builtin.git:
     repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
     dest: /root/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 
-# Installs the [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions.git) into -
-# (cont.) $HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions for low privileged user
+# Instalar el [plugin zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions.git) en $HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions para usuario con privilegios bajos
 
-- name: Install zsh-autosuggestions into $HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions directory for low privileged user
+- name: Instalar el plugin zsh-autosuggestions en $HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions para usuario con privilegios bajos
   become_user: ubuntu
   ansible.builtin.git:
     repo: https://github.com/zsh-users/zsh-autosuggestions.git
     dest: $HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions
 
-# Installs the [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions.git) into -
-# (cont.) /root/.oh-my-zsh/custom/plugins/zsh-autosuggestions for root
+# Instalar el [plugin zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions.git) en /root/.oh-my-zsh/custom/plugins/zsh-autosuggestions para root
 
-- name: Install zsh-autosuggestions into /root/.oh-my-zsh/custom/plugins/zsh-autosuggestions directory for root
+- name: Instalar el plugin zsh-autosuggestions en /root/.oh-my-zsh/custom/plugins/zsh-autosuggestions para root
   ansible.builtin.git:
     repo: https://github.com/zsh-users/zsh-autosuggestions.git
     dest: /root/.oh-my-zsh/custom/plugins/zsh-autosuggestions
 
-# Installs the [zsh-history-substring-search](https://github.com/zsh-users/zsh-history-substring-search.git) into -
-# (cont.) $HOME/.oh-my-zsh/custom/plugins/zsh-history-substring-search for low privileged user
+# Instalar el [plugin zsh-history-substring-search](https://github.com/zsh-users/zsh-history-substring-search.git) en $HOME/.oh-my-zsh/custom/plugins/zsh-history-substring-search para usuario con privilegios bajos
 
-- name: Installs the zsh-history-substring-searchinto $HOME/.oh-my-zsh/custom/plugins/zsh-history-substring-search for low privileged user
+- name: Instalar el plugin zsh-history-substring-search en $HOME/.oh-my-zsh/custom/plugins/zsh-history-substring-search para usuario con privilegios bajos
   become_user: ubuntu
   ansible.builtin.git:
     repo: https://github.com/zsh-users/zsh-history-substring-search.git
     dest: $HOME/.oh-my-zsh/custom/plugins/zsh-history-substring-search
 
-# Installs the [zsh-history-substring-search](https://github.com/zsh-users/zsh-history-substring-search.git) into -
-# (cont.) /root/.oh-my-zsh/custom/plugins/zsh-history-substring-search for root
+# Instalar el [plugin zsh-history-substring-search](https://github.com/zsh-users/zsh-history-substring-search.git) en /root/.oh-my-zsh/custom/plugins/zsh-history-substring-search para root
 
-- name: Installs the zsh-history-substring-searchinto /root/.oh-my-zsh/custom/plugins/zsh-history-substring-search for root
+- name: Instalar el plugin zsh-history-substring-search en /root/.oh-my-zsh/custom/plugins/zsh-history-substring-search para root
   ansible.builtin.git:
     repo: https://github.com/zsh-users/zsh-history-substring-search.git
     dest: /root/.oh-my-zsh/custom/plugins/zsh-history-substring-search
 
-# Installs the [zsh-autocomplete](https://github.com/marlonrichert/zsh-autocomplete.git) into -
-# (cont.) $HOME/.oh-my-zsh/custom/plugins/zsh-autocomplete for low privileged user
+# Instalar el [plugin zsh-autocomplete](https://github.com/marlonrichert/zsh-autocomplete.git) en $HOME/.oh-my-zsh/custom/plugins/zsh-autocomplete para usuario con privilegios bajos
 
-- name: Installs the zsh-autocompleteinto $HOME/.oh-my-zsh/custom/plugins/zsh-autocomplete for low privileged user
+- name: Instalar el plugin zsh-autocomplete en $HOME/.oh-my-zsh/custom/plugins/zsh-autocomplete para usuario con privilegios bajos
   become_user: ubuntu
   ansible.builtin.git:
     repo: https://github.com/marlonrichert/zsh-autocomplete.git
     dest: $HOME/.oh-my-zsh/custom/plugins/zsh-autocomplete
 
-# Installs the [zsh-autocomplete](https://github.com/marlonrichert/zsh-autocomplete.git) into -
-# (cont.) /root/.oh-my-zsh/custom/plugins/zsh-autocomplete for root
+# Instalar el [plugin zsh-autocomplete](https://github.com/marlonrichert/zsh-autocomplete.git) en /root/.oh-my-zsh/custom/plugins/zsh-autocomplete para root
 
-- name: Installs the zsh-autocompleteinto /root/.oh-my-zsh/custom/plugins/zsh-autocomplete for root
+- name: Instalar el plugin zsh-autocomplete en /root/.oh-my-zsh/custom/plugins/zsh-autocomplete para root
   ansible.builtin.git:
     repo: https://github.com/marlonrichert/zsh-autocomplete.git
     dest: /root/.oh-my-zsh/custom/plugins/zsh-autocomplete
 
-# Installs the fzf-zsh-plugin into $HOME/.oh-my-zsh/custom/plugins/fzf-zsh-plugin for low privileged user
+# Instalar el plugin fzf-zsh en $HOME/.oh-my-zsh/custom/plugins/fzf-zsh-plugin para usuario con privilegios bajos
 
-- name: Installs the fzf-zsh-plugin into $HOME/.oh-my-zsh/custom/plugins/fzf-zsh-plugin for low privileged user
+- name: Instalar el plugin fzf-zsh en $HOME/.oh-my-zsh/custom/plugins/fzf-zsh-plugin para usuario con privilegios bajos
   become_user: ubuntu
   ansible.builtin.git:
     repo: https://github.com/unixorn/fzf-zsh-plugin.git
     dest: $HOME/.oh-my-zsh/custom/plugins/fzf-zsh-plugin
 
-# Installs the fzf-zsh-plugin into /root/.oh-my-zsh/custom/plugins/fzf-zsh-plugin for root
+# Instalar el plugin fzf-zsh en /root/.oh-my-zsh/custom/plugins/fzf-zsh-plugin para root
 
-- name: Clone fzf-zsh-plugin into omz custom plugins directory
+- name: Clonar el plugin fzf-zsh en el directorio de plugins personalizados de omz
   ansible.builtin.git:
     repo: https://github.com/unixorn/fzf-zsh-plugin.git
     dest: /root/.oh-my-zsh/custom/plugins/fzf-zsh-plugin
 
-# Add [powerlevel10k](https://github.com/romkatv/powerlevel10k.git) theme to `.oh-my-zsh/custom/themes/powerlevel10k`
+# Agregar el tema [powerlevel10k](https://github.com/romkatv/powerlevel10k.git) a `.oh-my-zsh/custom/themes/powerlevel10k`
 
-- name: Clone powerlevel10k to .oh-my-zsh/custom/themes/powerlevel10k directory as low privileged user
+- name: Clonar powerlevel10k en el directorio .oh-my-zsh/custom/themes/powerlevel10k como usuario con privilegios bajos
   become_user: ubuntu
   ansible.builtin.git:
     repo: https://github.com/romkatv/powerlevel10k.git
     dest: $HOME/.oh-my-zsh/custom/themes/powerlevel10k
 
-- name: Clone powerlevel10k to .oh-my-zsh/custom/themes/powerlevel10k directory as root
+- name: Clonar powerlevel10k en el directorio .oh-my-zsh/custom/themes/powerlevel10k como root
   ansible.builtin.git:
     repo: https://github.com/romkatv/powerlevel10k.git
     dest: /root/.oh-my-zsh/custom/themes/powerlevel10k
 
-# Add custom .zshrc containing functions, aliases, custom/themes and custom/plugins directories
+# Agregar .zshrc personalizado que contiene funciones, alias, directorios custom/themes y custom/plugins
 
-- name: Copy .zshrc file containing customized functions, aliases and shell configuration [user]
+- name: Copiar archivo .zshrc que contiene funciones personalizadas, alias y configuración del shell [usuario]
   become_user: ubuntu
   ansible.builtin.copy:
     src: ../files/.zshrc
     dest: $HOME/.zshrc
     remote_src: false
 
-- name: Copy .zshrc file containing customized functions, aliases and shell configuration [root]
+- name: Copiar archivo .zshrc que contiene funciones personalizadas, alias y configuración del shell [root]
   become: true
   become_method: sudo
   ansible.builtin.copy:
     src: ../files/.zshrc
     dest: /root/.zshrc
     remote_src: false
+# Agregar archivo .p10k.zsh personalizado que contiene funciones, alias, directorios custom/themes y custom/plugins
 
-# Add custom .p10k.zsh containing functions, aliases, custom/themes and custom/plugins directories
+# Esta tarea copia un archivo .p10k.zsh personalizado al directorio home del usuario 'ubuntu'.
+# El archivo .p10k.zsh contiene configuraciones personalizadas para el tema powerlevel10k de Zsh.
+# become_user: ubuntu - Ejecuta la tarea como el usuario 'ubuntu'.
+# ansible.builtin.copy - Utiliza el módulo copy de Ansible para copiar archivos.
+# src: ../files/.p10k.zsh - Ruta relativa al archivo fuente que se va a copiar.
+# dest: $HOME/.p10k.zsh - Ruta de destino donde se copiará el archivo.
+# remote_src: false - Indica que el archivo fuente está en la máquina local desde donde se ejecuta Ansible.
 
-- name: Copy .p10k.zsh file containing customized functions, aliases and shell configuration [user]
+- name: Copiar archivo .p10k.zsh que contiene funciones personalizadas, alias y configuración del shell [usuario]
   become_user: ubuntu
   ansible.builtin.copy:
     src: ../files/.p10k.zsh
     dest: $HOME/.p10k.zsh
     remote_src: false
 
-- name: Copy .p10k.zsh file containing customized functions, aliases and shell configuration [root]
+# Esta tarea copia un archivo .p10k.zsh personalizado al directorio home del usuario 'root'.
+# El archivo .p10k.zsh contiene configuraciones personalizadas para el tema powerlevel10k de Zsh.
+# become: true - Escala privilegios para ejecutar la tarea como root.
+# become_method: sudo - Utiliza sudo para escalar privilegios.
+# ansible.builtin.copy - Utiliza el módulo copy de Ansible para copiar archivos.
+# src: ../files/.p10k.zsh - Ruta relativa al archivo fuente que se va a copiar.
+# dest: /root/.p10k.zsh - Ruta de destino donde se copiará el archivo.
+# remote_src: false - Indica que el archivo fuente está en la máquina local desde donde se ejecuta Ansible.
+
+- name: Copiar archivo .p10k.zsh que contiene funciones personalizadas, alias y configuración del shell [root]
   become: true
   become_method: sudo
   ansible.builtin.copy:

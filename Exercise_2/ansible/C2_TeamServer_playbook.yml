@@ -1,13 +1,28 @@
 ---
+# Este playbook instala frameworks de Command & Control (C2) usando roles de Ansible
+# Un playbook es como una receta que le dice a Ansible qué tareas ejecutar en los servidores
+
 - name: Install C2 Frameworks for YYYY-MO-OPERATION_NAME-OPERATION_TYPE via Ansible Roles
+  # Define en qué hosts se ejecutará este playbook - 'all' significa todos los hosts del inventario
   hosts: all
+  # 'become: true' permite escalar privilegios (similar a sudo) para ejecutar comandos como root
   become: true
+  # Especifica qué usuario usará Ansible para conectarse inicialmente al servidor
   remote_user: kali
+  # Recopila información sobre el sistema remoto antes de ejecutar las tareas
   gather_facts: true
+  # Define qué método usar para escalar privilegios (en este caso sudo)
   become_method: ansible.builtin.sudo
+  # Lista de roles que se ejecutarán en orden
   roles:
+    # Instala y configura Tailscale para crear una VPN entre servidores
     - tailscale_kali
+    # Roles comentados que pueden habilitarse según necesidad:
+    # Instala Oh My Tmux para mejorar la terminal tmux
 #    - ohmytmux_kali
+    # Instala Oh My Zsh para mejorar la shell zsh
 #    - ohmyzsh_kali  
+    # Instala el framework C2 Mythic
     - mythic_kali
+    # Instala el framework C2 Sliver
 #    - sliver_kali

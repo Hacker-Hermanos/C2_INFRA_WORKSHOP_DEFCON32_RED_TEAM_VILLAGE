@@ -1,54 +1,73 @@
 ---
-- name: Find all files in the sites-available directory
+# Este playbook configura los hosts virtuales de Apache para redirecciones HTTPS
+
+- name: Encontrar todos los archivos en el directorio sites-available
+  # Busca recursivamente todos los archivos en el directorio de configuración de Apache
+  # Esto es necesario para poder eliminar configuraciones antiguas
   ansible.builtin.find:
     paths: /etc/apache2/sites-available/
     recurse: true
     file_type: file
   register: found_files
 
-- name: Disable http Apache sites
+- name: Deshabilitar sitios HTTP de Apache
+  # Desactiva cada configuración HTTP existente usando el comando a2dissite
+  # El comando a2dissite es específico de Apache y se usa para deshabilitar sitios web
   ansible.builtin.command: |
     a2dissite rt_{{ item.redirector_domain }}.conf
   with_items: "{{ vhosts_dictionary }}"
   register: disable_http_sites
   ignore_errors: true
+  # Solo marca como cambiado si el comando se ejecutó exitosamente (código de retorno 0)
   changed_when: disable_http_sites.rc == 0
   failed_when: disable_http_sites.rc != 0
 
-- name: Delete all files in the sites-available directory
+- name: Eliminar todos los archivos en el directorio sites-available
+  # Elimina físicamente todos los archivos de configuración encontrados anteriormente
+  # Esto asegura una configuración limpia sin residuos de configuraciones antiguas
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ found_files.files }}"
 
-- name: Create https virtual host files, one per redirector_domain
+- name: Crear archivos de host virtual HTTPS, uno por cada redirector_domain
+  # Crea nuevos archivos de configuración HTTPS usando una plantilla
+  # La plantilla apache_sslvhost.conf.j2 contiene la configuración base para HTTPS
   ansible.builtin.template:
     src: apache_sslvhost.conf.j2
     dest: /etc/apache2/sites-available/rtssl_{{ item.redirector_domain }}.conf
     mode: '0644'
   with_items: "{{ vhosts_dictionary }}"
 
-- name: Create logs directory inside webroot
+- name: Crear directorio de logs dentro del webroot
+  # Crea directorios para almacenar logs específicos de cada dominio
+  # Estos logs son importantes para monitoreo y diagnóstico
   ansible.builtin.file:
     path: "/var/www/html/{{ item.redirector_domain }}/logs"
     state: directory
     mode: '0755'
   with_items: "{{ vhosts_dictionary }}"
 
-- name: Clear iptables rules
+- name: Limpiar reglas de iptables
+  # Elimina todas las reglas de firewall existentes para empezar desde cero
+  # PRECAUCIÓN: Esto elimina todas las reglas de seguridad existentes
   ansible.builtin.command: iptables -F
   become: true
 
-- name: Block all traffic to port 80 using iptables
+- name: Bloquear todo el tráfico al puerto 80 usando iptables
+  # Configura el firewall para rechazar conexiones HTTP (puerto 80)
+  # Esto fuerza a los usuarios a usar HTTPS
   ansible.builtin.command: iptables -A INPUT -p tcp --dport 80 -j REJECT
   become: true
 
-- name: Disable autoindex module to prevent directory listings
+- name: Deshabilitar módulo autoindex para prevenir listados de directorios
+  # Mejora la seguridad evitando que se muestren los contenidos de los directorios
   ansible.builtin.shell: |
     a2dismod autoindex
   failed_when: false
 
-- name: Add redirect.rules file on /etc/apache2/redirect.rules
+- name: Agregar archivo redirect.rules en /etc/apache2/redirect.rules
+  # Configura las reglas de redirección personalizadas para cada dominio
   ansible.builtin.template:
     src: redirect.rules.j2
     dest: "/etc/apache2/redirect.rules"
@@ -56,7 +75,8 @@
     force: true
   with_items: "{{ vhosts_dictionary }}"
 
-- name: Enable https Apache site
+- name: Habilitar sitio HTTPS de Apache
+  # Activa las nuevas configuraciones HTTPS usando a2ensite
   ansible.builtin.command: |
     a2ensite rtssl_{{ item.redirector_domain }}.conf
   with_items: "{{ vhosts_dictionary }}"
@@ -65,13 +85,15 @@
   changed_when: enable_https_sites.rc == 0
   failed_when: enable_https_sites.rc != 0
 
-- name: Restart apache2 systemd service
+- name: Reiniciar servicio systemd de apache2
+  # Reinicia Apache para aplicar todos los cambios de configuración
   ansible.builtin.systemd_service:
     name: apache2
     state: restarted
     enabled: true
 
-- name: Enable apache2 systemd service
+- name: Habilitar servicio systemd de apache2
+  # Asegura que Apache esté iniciado y configurado para iniciar con el sistema
   ansible.builtin.systemd_service:
     name: apache2
     state: started

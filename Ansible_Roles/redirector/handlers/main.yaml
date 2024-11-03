@@ -1,3 +1,9 @@
 ---
-- name: restart apache2
+# Este es un archivo de manejadores (handlers) de Ansible que define acciones que se pueden activar desde otras tareas
+# Los handlers solo se ejecutan cuando son notificados por otras tareas y solo se ejecutan una vez al final de la ejecución
+
+- name: restart apache2   # Define un manejador llamado "restart apache2" que puede ser referenciado desde otras tareas
+  # El módulo "service" de Ansible se usa para controlar servicios del sistema (iniciar, detener, reiniciar)
+  # name=apache2: Especifica el nombre del servicio que queremos controlar
+  # state=restarted: Indica que queremos reiniciar el servicio
   service: name=apache2 state=restarted

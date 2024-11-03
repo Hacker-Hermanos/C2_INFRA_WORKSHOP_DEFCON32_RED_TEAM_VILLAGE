@@ -1,79 +1,87 @@
 <VirtualHost *:{{ item.https_port }}>
 
-# Include <REDIRECTOR_DOMAIN>. This is the frontend domain the C2 Implant will send traffic to and points to the Redirector IP.
+# Incluir <REDIRECTOR_DOMAIN>. Este es el dominio frontend al que el Implante C2 enviará tráfico y apunta a la IP del Redirector.
+# Este es un archivo de configuración de host virtual de Apache que se utiliza para configurar un servidor proxy reverso seguro
 ServerName {{ item.redirector_domain }}
+# Define el directorio raíz para los archivos del sitio web
 DocumentRoot /var/www/html/{{ item.redirector_domain }}
 
-# https://httpd.apache.org/docs/2.4/mod/core.html#loglevel
+# Configuración del nivel de registro (logging) de Apache
+# Documentación de niveles de registro: https://httpd.apache.org/docs/2.4/mod/core.html#loglevel
 # LogLevel alert rewrite:trace6
 
-# Allow Directory Listing
-
+# Configuración para permitir listado de directorios (comentado por seguridad)
 # <Directory /var/www/html>
 #        Options Indexes FollowSymLinks
 #        AllowOverride All
 #        Require all granted
 # </Directory>
 
-# Enable SSL engine for secure connections
+# Habilitar el motor SSL para conexiones seguras
 SSLEngine On
-# Set the path to the SSL certificate file
+# Establecer la ruta al archivo de certificado SSL
 SSLCertificateFile /etc/letsencrypt/live/{{ item.redirector_domain }}/cert.pem
-# Set the path to the SSL certificate key file
+# Establecer la ruta al archivo de clave del certificado SSL
 SSLCertificateKeyFile /etc/letsencrypt/live/{{ item.redirector_domain }}/privkey.pem
-# Set the path to the SSL certificate chain file
+# Establecer la ruta al archivo de cadena del certificado SSL
 SSLCertificateChainFile /etc/letsencrypt/live/{{ item.redirector_domain }}/fullchain.pem
-# Enable SSL proxy engine for secure proxy connections
+# Habilitar el motor proxy SSL para conexiones proxy seguras
 SSLProxyEngine On
-# Disable verification of the SSL certificate on the proxy
+# Deshabilitar la verificación del certificado SSL en el proxy
+# Esto puede ser un riesgo de seguridad ya que no se verifica la autenticidad del servidor backend
 SSLProxyVerify none
-# Disable checking of the Common Name (CN) field in the peer certificate on the proxy
+# Deshabilitar la verificación del campo Common Name (CN) en el certificado del par en el proxy
 SSLProxyCheckPeerCN off
-# Disable checking of the peer certificate's name on the proxy
+# Deshabilitar la verificación del nombre del certificado del par en el proxy
 SSLProxyCheckPeerName off
-# Disable checking of the expiration date of the peer certificate on the proxy
+# Deshabilitar la verificación de la fecha de expiración del certificado del par en el proxy
 SSLProxyCheckPeerExpire off
-# Reverse Proxy (Redirector) preserves the original "Host" header from the client's request and sends it to the backend server
+# El Proxy Reverso (Redirector) preserva el encabezado "Host" original de la solicitud del cliente y lo envía al servidor backend
 ProxyPreserveHost On
-# Enable or disable the Apache URL rewriting engine
+# Habilitar o deshabilitar el motor de reescritura de URL de Apache
 RewriteEngine On
 
-# Ensure "snakeoil" certs/key are commented in Apache Server configuration. Otherwise, the server will use self-signed certificate.
+# Asegúrate de que los certificados/claves "snakeoil" estén comentados en la configuración del Servidor Apache. 
+# De lo contrario, el servidor utilizará un certificado autofirmado.
 
 # SSLCertificateFile /etc/ssl/certs/ssl-cert-snakeoil.pem
 # SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
 
-# Define Redirect Target
+# Definir el objetivo de redirección
 DEFINE REDIR_TARGET {{ item.decoy_domain }}
 
-# Define Backend C2 Teamserver(s)
+# Definir servidor(es) C2 Backend
 {% if item.backend_teamservers is defined %}
 {% for backend_teamserver in item.backend_teamservers %}
 DEFINE {{ backend_teamserver.name }} {{ backend_teamserver.vpn_ip }}
 {% endfor %}
 {% endif %}
 
-# https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html
-# RewriteRule: If the request contains "/<URI_PATH_C2_TRAFFIC>/", redirect to C2 VPN IPs. If it does not contain the "/<URI_PATH_C2_TRAFFIC>/", traffic will match the RewriteRule for <DECOY_DOMAIN>.<TLD>.
+# Documentación de mod_rewrite: https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html
+# RewriteRule: Si la solicitud contiene "/<URI_PATH_C2_TRAFFIC>/", redirige a las IPs VPN C2. 
+# Si no contiene "/<URI_PATH_C2_TRAFFIC>/", el tráfico coincidirá con la RewriteRule para <DECOY_DOMAIN>.<TLD>.
 Include /etc/apache2/redirect.rules
 
-# Specify User Agents to be blocked
+# Especificar User Agents que serán bloqueados
+# Bloquea agentes de usuario comunes de bots para evitar accesos no deseados
 RewriteCond %{HTTP_USER_AGENT} (google|yandex|bingbot|Googlebot|bot|spider|simple|BBBike|wget|cloudfront|curl|Python|Wget|crawl|baidu|Lynx|xforce|HTTrack|Slackbot|netcraft|NetcraftSurveyAgent|Netcraft|shodan) [NC]
 RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
 
+# Configuraciones previas personalizadas
 {% if item.pre_configs is defined %}
 {% for config in item.pre_configs %}
 {{ config}}
 {% endfor %}
 {% endif %}
 
+# Incluir archivos de configuración adicionales si están definidos
 {% if item.config_files is defined %}
 {% for config_file in item.config_files %}
 {{ lookup('file', config_file) }} 
 {% endfor %}
 {% endif %}
 
-# Required HTTP Header(s)
+# Encabezados HTTP requeridos - Redirige al dominio señuelo si faltan
 {% if item.required_http_header is defined %}
 {% for header in item.required_http_header %}
 RewriteCond %{HTTP:{{ header }}} ^$
@@ -81,48 +89,58 @@ RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
 {% endfor %}
 {% endif %}
 
+# Definiciones de rutas URI personalizadas
 {% if item.uri_path_definitions is defined %}
 {% for uri in item.uri_path_definitions %}
 Define {{ uri.name }} {{ uri.path }}
 {% endfor %}
 {% endif %}
 
-# https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html#rewritecond
+# Condiciones de reescritura para filtrar y redirigir tráfico específico
 {% if item.rewrite_rule_filters is defined %}
 {% for c in item.rewrite_rule_filters %}
 RewriteCond %{REQUEST_URI} {{ c.rewritefilter }}
 RewriteRule ^(.*)$ %{REQUEST_SCHEME}://{{ c.backend_teamserver }}:{{ c.backend_forward_port }}%{REQUEST_URI} [P,NE,L]
 ProxyPassReverse ^ %{REQUEST_SCHEME}://{{ c.backend_teamserver }}:{{ c.backend_forward_port }}%{REQUEST_URI} [P,NE]
-
 {% endfor %}
 {% endif %}
 
-# If the above rules don't match send to <DECOY_DOMAIN>.<TLD> (e.g. google.com)
+# Si las reglas anteriores no coinciden, enviar a <DECOY_DOMAIN>.<TLD> (por ejemplo, google.com)
 RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
 
-# Custom logging location
+# Ubicación personalizada de registros
+# Define dónde se almacenarán los archivos de registro para este dominio
 ErrorLog /var/www/html/{{ item.redirector_domain }}/logs/error.log
 CustomLog /var/www/html/{{ item.redirector_domain }}/logs/access.log combined
 
-# Define directory to hold logs and deny access to it
+# Definir directorio para almacenar registros y denegar acceso
+# Configuración de seguridad para proteger los archivos de registro
 <Directory /var/www/html/{{ item.redirector_domain }}/logs>
         Order deny,allow
         Deny from all
 </Directory>
 
-# Security Headers
-
+# Cabeceras de Seguridad
+# Esta sección configura importantes cabeceras HTTP para mejorar la seguridad
 <IfModule mod_headers.c>
+    # Previene el almacenamiento en caché del navegador
     Header set Cache-Control "no-store, no-cache, proxy-revalidate"
     Header set Pragma "no-cache"
     Header set Expires "0"
+    # Fuerza HTTPS
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    # Política de seguridad de contenido para prevenir XSS
     Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+    # Protección contra ataques XSS
     Header always set X-XSS-Protection "1; mode=block"
+    # Previene clickjacking
     Header always set X-Frame-Options "SAMEORIGIN"
+    # Previene MIME-type sniffing
     Header always set X-Content-Type-Options "nosniff"
+    # Control de información de referencia
     Header always set Referrer-Policy "strict-origin"
+    # Establece la codificación de caracteres
     Header set Content-Type "text/html; charset=utf-8"
 </IfModule>
 
-</Virtualhost>
+</VirtualHost>

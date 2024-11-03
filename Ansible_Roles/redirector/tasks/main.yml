@@ -1,7 +1,19 @@
 ---
-- name: Configure Apache2 via Ansible Role
+# Este es el archivo principal de tareas para el rol 'redirector' que configura un servidor web Apache2 con redirección
+# Las tareas se ejecutan en el orden especificado de arriba a abajo
+
+# Importa y ejecuta todas las tareas definidas en apache.yml
+# Este archivo contiene la configuración básica de Apache2, como instalación y configuración inicial
+- name: Configurar Apache2 a través del Rol de Ansible
   ansible.builtin.import_tasks: "apache.yml"
-- name: Configure Apache2 via Ansible Role
+
+# Importa y ejecuta todas las tareas definidas en letsencrypt.yml
+# Este archivo contiene la configuración de certificados SSL usando Let's Encrypt para habilitar HTTPS
+- name: Configurar Let's Encrypt a través del Rol de Ansible
   ansible.builtin.import_tasks: "letsencrypt.yml"
-- name: Configure Apache2 vhosts files after certificate is provisioned
+
+# Importa y ejecuta todas las tareas definidas en update_vhosts.yml
+# Este archivo actualiza la configuración de hosts virtuales de Apache2 después de que los certificados SSL están listos
+# Los hosts virtuales son como sitios web independientes que se ejecutan en el mismo servidor Apache
+- name: Configurar archivos vhosts de Apache2 después de aprovisionar el certificado
   ansible.builtin.import_tasks: "update_vhosts.yml"

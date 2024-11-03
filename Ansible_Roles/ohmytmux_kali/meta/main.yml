@@ -1,21 +1,31 @@
 ---
+# Este archivo define los metadatos del rol de Ansible para la instalación de oh-my-tmux en Kali
+# Los metadatos son importantes porque proporcionan información sobre el rol a otros usuarios
+
 galaxy_info:
+  # Nombre del rol - identifica únicamente este rol en Ansible Galaxy
   role_name: ohmytmux_kali
-  description: Installs oh-my-tmux in Kali
+  # Descripción breve que explica el propósito del rol
+  description: Instala oh-my-tmux en Kali
+  # Información de la compañía o sitio web asociado
   company: www.hackerhermanos.com
+  # Espacio de nombres único para evitar conflictos con otros roles
   namespace: pr0b3r7
+  # Autor y su información de contacto profesional
   author: Robert Pimentel - www.linkedin.com/in/pimentelrobert1
+  # URL donde los usuarios pueden reportar problemas o bugs
   issue_tracker_url: https://github.com/pr0b3r7/DEFCON32_RT_Village_workshop/issues
+  # Tipo de licencia bajo la cual se distribuye este rol
   license: MIT
+  # Versión mínima de Ansible requerida para ejecutar este rol
   min_ansible_version: 2.1
 
-  # If this a Container Enabled role, provide the minimum Ansible Container version.
+  # Si este rol está habilitado para contenedores, especifica la versión mínima de Ansible Container
   # min_ansible_container_version:
 
-  #
-  # Provide a list of supported platforms, and for each platform a list of versions.
-  # If you don't wish to enumerate all versions for a particular platform, use 'all'.
-  # To view available platforms and versions (or releases), visit:
+  # Plataformas soportadas
+  # Aquí puedes listar las plataformas y versiones en las que este rol ha sido probado
+  # Para ver las plataformas y versiones disponibles, visita:
   # https://galaxy.ansible.com/api/v1/platforms/
   #
   # platforms:
@@ -30,14 +40,16 @@ galaxy_info:
   #   - 7
   #   - 99.99
 
+  # Lista vacía de etiquetas Galaxy
   galaxy_tags: []
-    # List tags for your role here, one per line. A tag is a keyword that describes
-    # and categorizes the role. Users find roles by searching for tags. Be sure to
-    # remove the '[]' above, if you add tags to this list.
+    # Aquí puedes agregar etiquetas para tu rol, una por línea
+    # Las etiquetas ayudan a otros usuarios a encontrar tu rol en Ansible Galaxy
+    # Elimina los '[]' si agregas etiquetas
     #
-    # NOTE: A tag is limited to a single word comprised of alphanumeric characters.
-    #       Maximum 20 tags per role.
+    # NOTA: Una etiqueta está limitada a una sola palabra con caracteres alfanuméricos
+    #       Máximo 20 etiquetas por rol
 
+# Lista vacía de dependencias
 dependencies: []
-  # List your role dependencies here, one per line. Be sure to remove the '[]' above,
-  # if you add dependencies to this list.
+  # Aquí puedes listar las dependencias de tu rol, una por línea
+  # Elimina los '[]' si agregas dependencias

@@ -1,154 +1,140 @@
 ---
-# tasks file for ohmytmux
+# Archivo de tareas para instalar y configurar oh-my-tmux
+# Este playbook automatiza la instalación de tmux y oh-my-tmux tanto para el usuario root como para el usuario kali
 
-# Check if tmux is installed with apt before installing
-
-- name: Gather package facts
+# Primero, verificamos si tmux está instalado usando el gestor de paquetes apt
+- name: Recolectar información de paquetes
   ansible.builtin.package_facts:
     manager: apt
+  # Este módulo recopila información sobre los paquetes instalados en el sistema
+  # Es necesario para poder verificar si tmux ya está instalado antes de intentar instalarlo
 
-- name: Check if tmux is installed
+# Verificamos si tmux está instalado
+- name: Verificar si tmux está instalado
   ansible.builtin.debug:
     var: "'tmux' in ansible_facts.packages"
   register: tmux_installed
+  # Verifica si tmux está en la lista de paquetes instalados
+  # Guarda el resultado en la variable tmux_installed para usarlo después
+  # El módulo debug nos permite ver el resultado de la verificación
 
-# Install tmux with apt if it is not installed
-
-- name: Install tmux with apt if it is not installed
+# Instalar tmux si no está presente en el sistema
+- name: Instalar tmux con apt si no está instalado
   when: tmux_installed != "True"
   ansible.builtin.apt:
     name: tmux
     state: latest
     update_cache: true
   register: tmux_installation
+  # Solo se ejecuta si tmux no está instalado (cuando la verificación anterior fue falsa)
+  # Actualiza la caché de apt para asegurar que tenemos la información más reciente
+  # Instala la última versión disponible de tmux
+  # Registra el resultado en tmux_installation para verificar después
 
-# Check if tmux is installed with apt after installing
-
-- name: Check if tmux is installed with apt after installing
+# Verificar la instalación de tmux después de intentar instalarlo
+- name: Verificar si tmux está instalado con apt después de instalarlo
   when: tmux_installation is changed
   ansible.builtin.package_facts:
     manager: apt
   register: post_install
+  # Se ejecuta solo si la tarea de instalación realizó cambios en el sistema
+  # Vuelve a verificar los paquetes instalados para confirmar la instalación
+  # Guarda el resultado en post_install para la confirmación final
 
-# Confirm tmux installation
-
-- name: Confirm tmux installation
+# Confirmar que tmux se instaló correctamente
+- name: Confirmar la instalación de tmux
   ansible.builtin.debug:
     var: "'tmux' in post_install.ansible_facts.packages"
+  # Muestra un mensaje confirmando si tmux está instalado correctamente
+  # Usa los datos recopilados en el paso anterior para la verificación
 
-
-#- name: Check if tmux is installed with apt before installing
-#  ansible.builtin.apt:
-#    name: "{{ item }}"
-#    state: latest
-#  loop:
-#    - tmux
-#  register: tmux_initial_check
-#  failed_when: tmux_initial_check.state != latest
-#  changed_when: tmux_initial_check.state != latest # <- Uses the return code to define when the task has changed.
-#  ignore_errors: true
-#
-## Output the result of check if tmux is installed with apt before attempting to install
-#
-#
-#- name: Output the result of check if tmux is installed with apt before attempting to install
-#  ansible.builtin.debug:
-#    var: tmux_initial_check
-#
-## Install tmux with apt
-#
-#- name: Install tmux with apt
-#  when: tmux_initial_check is failed
-#  ansible.builtin.apt:
-#    update_cache: true
-#    pkg: "{{ item }}"
-#  loop:
-#    - tmux
-#  ignore_errors: true
-#  register: tmux_installation_result
-##  failed_when: tmux_installation_result.rc|int != 0
-##  changed_when: tmux_installation_result.rc != 0 # <- Uses the return code to define when the task has changed.
-#
-## Check if tmux is installed with apt after installing
-#
-#- name: Check if tmux is installed with apt after installing
-##  when: tmux_installation_result is failed
-#  ansible.builtin.apt:
-#    name: "{{ item }}"
-#    state: latest
-#  loop:
-#    - tmux
-#  register: tmux_post_install_validated
-#  failed_when: tmux_post_install_validated.state != latest
-#  changed_when: tmux_post_install_validated.state != latest # <- Uses the return code to define when the task has changed.
-#  ignore_errors: false
-
-# Install oh-my-tmux via git for root
-
-- name: Install oh-my-tmux via git
+# CONFIGURACIÓN PARA EL USUARIO ROOT
+# Instalar oh-my-tmux desde GitHub para el usuario root
+- name: Instalar oh-my-tmux vía git
   ansible.builtin.git:
     repo: https://github.com/gpakosz/.tmux.git
     dest: /root/.tmux
   become: true
+  # Clona el repositorio de oh-my-tmux en el directorio .tmux del usuario root
+  # become: true permite ejecutar esta tarea con privilegios de superusuario
+  # El repositorio contiene la configuración personalizada de tmux
 
-# Install oh-my-tmux.conf via symbolic link to /root/.tmux.conf
-
-- name: Install oh-my-tmux.conf via symbolic link to /root/.tmux.conf
+# Crear enlace simbólico para la configuración principal de tmux para root
+- name: Instalar oh-my-tmux.conf vía enlace simbólico a /root/.tmux.conf
   ansible.builtin.file:
     src: /root/.tmux/.tmux.conf
     dest: /root/.tmux.conf
     state: link
     force: true
   become: true
+  # Crea un enlace simbólico del archivo de configuración principal
+  # force: true sobrescribe el enlace si ya existe
+  # Este archivo contiene la configuración base de oh-my-tmux
 
-# Copy oh-my-tmux.conf.local to /root/.tmux.conf.local
-
-- name: Copy oh-my-tmux.conf.local to /root/.tmux.conf.local
+# Copiar archivo de configuración local personalizable para root
+- name: Copiar oh-my-tmux.conf.local a /root/.tmux.conf.local
   ansible.builtin.copy:
     src: /root/.tmux/.tmux.conf.local
     dest: /root/.tmux.conf.local
     remote_src: true
   become: true
+  # Copia el archivo de configuración local que permite personalizaciones
+  # remote_src: true indica que el archivo fuente está en el sistema remoto
+  # Este archivo permite personalizar la configuración sin modificar el original
 
-# Validate oh-my-tmux.conf.local file exists
-
-- name: Validate oh-my-tmux.conf.local file exists
+# Verificar que el archivo de configuración local existe para root
+- name: Validar que el archivo oh-my-tmux.conf.local existe
   ansible.builtin.file:
     dest: /root/.tmux.conf.local
     state: file
   become: true
+  # Confirma que el archivo de configuración local existe
+  # Esta verificación asegura que la instalación se completó correctamente
 
-# Install oh-my-tmux via git for low privileged user
-
-- name: Install oh-my-tmux via git
+# CONFIGURACIÓN PARA EL USUARIO KALI (USUARIO CON PRIVILEGIOS LIMITADOS)
+# Instalar oh-my-tmux desde GitHub para el usuario kali
+- name: Instalar oh-my-tmux vía git
   ansible.builtin.git:
     repo: https://github.com/gpakosz/.tmux.git
     dest: $HOME/.tmux
+
   become_user: kali
+  # Clona el repositorio para el usuario kali en su directorio home
+  # become_user: kali ejecuta esta tarea como el usuario kali
+  # $HOME se expande al directorio home del usuario kali
 
-# Install oh-my-tmux.conf via symbolic link to $HOME/.tmux.conf
-
-- name: Install oh-my-tmux.conf via symbolic link to $HOME/.tmux.conf
+# Crear enlace simbólico para la configuración principal de tmux para kali
+- name: Instalar oh-my-tmux.conf vía enlace simbólico a $HOME/.tmux.conf
   ansible.builtin.file:
     src: $HOME/.tmux/.tmux.conf
     dest: $HOME/.tmux.conf
     state: link
     force: true
+
   become_user: kali
+  # Crea el enlace simbólico para la configuración de kali
+  # Similar a la configuración de root pero en el directorio home de kali
+  # force: true asegura que el enlace se cree incluso si ya existe
 
-# Copy oh-my-tmux.conf.local to $HOME/.tmux.conf.local
-
-- name: Copy oh-my-tmux.conf.local to $HOME/.tmux.conf.local
+# Copiar archivo de configuración local personalizable para kali
+- name: Copiar oh-my-tmux.conf.local a $HOME/.tmux.conf.local
   ansible.builtin.copy:
     src: $HOME/.tmux/.tmux.conf.local
     dest: $HOME/.tmux.conf.local
     remote_src: true
+
   become_user: kali
+  # Copia el archivo de configuración local para el usuario kali
+  # Permite personalizaciones específicas para el usuario kali
+  # remote_src: true indica que el archivo fuente está en el sistema remoto
 
-# Validate oh-my-tmux.conf.local file exists
-
-- name: Validate oh-my-tmux.conf.local file exists
+# Verificar que el archivo de configuración local existe para kali
+- name: Validar que el archivo oh-my-tmux.conf.local existe
   ansible.builtin.file:
     dest: $HOME/.tmux.conf.local
     state: file
+
   become_user: kali
+  # Verifica que la configuración local existe para el usuario kali
+  # Asegura que la instalación para el usuario kali se completó correctamente
+  # Esta es la última verificación del proceso de instalación

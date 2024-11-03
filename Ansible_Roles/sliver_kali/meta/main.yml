@@ -1,20 +1,20 @@
 ---
 galaxy_info:
-  role_name: sliver_kali
-  description: Installs Sliver C2 TeamServer
-  company: www.hackerhermanos.com
-  namespace: pr0b3r7
-  author: Robert Pimentel - www.linkedin.com/in/pimentelrobert1
-  issue_tracker_url: https://github.com/pr0b3r7/DEFCON32_RT_Village_workshop/issues
-  license: MIT
+  role_name: sliver_kali  # Nombre del rol en Ansible Galaxy
+  description: Installs Sliver C2 TeamServer  # Descripción del rol
+  company: www.hackerhermanos.com  # Compañía que desarrolla el rol
+  namespace: pr0b3r7  # Espacio de nombres en Ansible Galaxy
+  author: Robert Pimentel - www.linkedin.com/in/pimentelrobert1  # Autor del rol y su perfil de LinkedIn
+  issue_tracker_url: https://github.com/pr0b3r7/DEFCON32_RT_Village_workshop/issues  # URL para reportar problemas
+  license: MIT  # Licencia bajo la cual se distribuye el rol
 
-  min_ansible_version: "2.1"
+  min_ansible_version: "2.1"  # Versión mínima de Ansible requerida para usar este rol
 
   platforms:
-    - name: Kali
+    - name: Kali  # Plataforma en la que se puede usar este rol
       versions:
-        - 6.1.0-kali5-amd64
+        - 6.1.0-kali5-amd64  # Versión específica de la plataforma soportada
 
   galaxy_tags:
-    - sliver
-    - c2
+    - sliver  # Etiqueta para categorizar el rol en Ansible Galaxy
+    - c2  # Otra etiqueta para categorizar el rol en Ansible Galaxy

@@ -4,75 +4,92 @@
 
 [![mythic_kali](https://img.shields.io/ansible/role/<PENDING_ROLE>)](https://galaxy.ansible.com/pr0b3r7/<PENDING_ROLE>)
 
-Install Mythic
+Este rol instala Mythic en un sistema Kali Linux.
 
-Role Variables
-
+## Variables del Rol
 -------
 
-A list of all the variables can be found in ./defaults/main.yml.
+Una lista de todas las variables se puede encontrar en ./defaults/main.yml.
 
-Important:
+Importante:
 
-If this role fails to install. You must run the below script to remove Mythic running containers. Otherwise, the directory where the repository is cloned into, will continue being populated by the running containers.
+Si este rol falla al instalarse, debes ejecutar el siguiente script para eliminar los contenedores de Mythic en ejecución. De lo contrario, el directorio donde se clonó el repositorio continuará siendo poblado por los contenedores en ejecución.
 
 ```BASH
+# Este script realiza una limpieza completa y reinstalación de Mythic
+# 1. Elimina completamente el directorio actual de Mythic
 sudo rm -rfv /opt/TA0011_C2/Mythic && 
+
+# 2. Crea un nuevo directorio para la instalación
 sudo mkdir /opt/TA0011_C2 && 
+
+# 3. Cambia al directorio de instalación
 cd /opt/TA0011_C2 &&
+
+# 4. Clona el repositorio oficial de Mythic
 sudo git clone https://github.com/its-a-feature/Mythic &&
+
+# 5. Entra al directorio de Mythic
 cd /opt/TA0011_C2/Mythic &&
+
+# 6. Compila e instala las dependencias necesarias
 sudo make &&
+
+# 7. Inicia los servicios de Mythic
 sudo /opt/TA0011_C2/Mythic/mythic-cli start &&
+
+# 8. Detiene los servicios de Mythic
 sudo /opt/TA0011_C2/Mythic/mythic-cli stop &&
+
+# 9. Limpia todos los contenedores Docker relacionados
 sudo docker-compose down --remove-orphans
 ```
 
-## Base Configs
+## Configuraciones Base
 
-- `mythic_repo` - Path to the repo you'd like to install. Useful if using a fork of Mythic
-- `mythic_version` - Branch to pull from repo
-- `installation_path` - Path to install Mythic
+- `mythic_repo` - Ruta al repositorio que deseas instalar. Útil si estás usando un fork de Mythic
+- `mythic_version` - Rama (branch) a extraer del repositorio
+- `installation_path` - Ruta donde se instalará Mythic
 
-## Service Configs
-
--------
-
-- `server_header` - Mythic HTTP server header
-- `admin_username` - Admin username for Mythic
-- `default_password` - Admin password for Mythic
-- `operation_name` - Default operation name
-
-## Agents
+## Configuraciones del Servicio
 
 -------
 
-- `agents[].repo` - Git repository to pull agent
-- `agents[].branch` - Branch to pull from repository
+- `server_header` - Encabezado del servidor HTTP de Mythic
+- `admin_username` - Nombre de usuario del administrador para Mythic
+- `default_password` - Contraseña del administrador para Mythic
+- `operation_name` - Nombre predeterminado de la operación
 
-Dependencies
-
--------
-
-Example Playbook
+## Agentes
 
 -------
+
+- `agents[].repo` - Repositorio Git para extraer el agente
+- `agents[].branch` - Rama a extraer del repositorio
+
+## Dependencias
+
+
+## Ejemplo de Playbook
 
 ```yaml
+# Este es un ejemplo básico de cómo usar el rol mythic_kali en tu playbook de Ansible
+# - 'hosts: servers' especifica que este playbook se ejecutará en todos los servidores definidos
+# - El rol 'mythic_kali' se aplicará a estos servidores
 - hosts: servers
   roles:
       - { role: mythic_kali }
 ```
 
-## License
+## Licencia
 
-MIT License
+Licencia MIT
 
-## Author Information
+## Información del Autor
 
 -------
 
-| Social Media | Link |
+| Red Social | Enlace |
 | --- | --- |
 | LinkedIn | [Robert Pimentel](https://LinkedIn.com/in/pimentelrobert1) |
 | Github | [@pr0b3r7](https://github.com/pr0b3r7) |
