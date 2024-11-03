@@ -63,17 +63,17 @@ Descubrirás cómo la infraestructura como código te permite crear despliegues 
 
 ## Glosario Técnico
 
-- **Servidor C2 (Command & Control)**: Herramienta central en pruebas de penetración para gestionar operaciones de seguridad.
-- **Redirector C2**: Componente que oculta la ubicación del servidor C2, mejorando la seguridad operacional.
-- **Infraestructura como Código (IaC)**: Gestión de infraestructura mediante código, usando herramientas como Terraform.
-- **DNS (Sistema de Nombres de Dominio)**: Traduce nombres de dominio a direcciones IP.
-- **Apache**: Servidor web configurable para operaciones C2.
-- **Terraform**: Herramienta de IaC para definir y crear infraestructura en la nube.
-- **Bucket S3**: Almacenamiento en la nube de AWS para guardar el estado de Terraform.
-- **CDN (Red de Entrega de Contenidos)**: Sistema de servidores para entregar contenido web rápidamente.
-- **AWS CloudFront**: CDN de Amazon para distribuir contenido con baja latencia.
-- **Listeners C2**: Componentes que procesan conexiones entrantes en un servidor C2.
-- **Payload C2**: Código enviado a sistemas comprometidos para comunicación con el servidor C2.
-- **Ansible**: Herramienta de automatización para configurar y administrar sistemas.
-- **VPN (Red Privada Virtual)**: Conexión segura y encriptada sobre una red menos segura.
-- **Security Headers**: Cabeceras HTTP que mejoran la seguridad de una aplicación web.
+- **Servidor C2 (Command & Control)**: [Herramienta central en pruebas de penetración para gestionar operaciones de seguridad](https://en.wikipedia.org/wiki/Command_and_control).
+- **Redirector C2**: [Componente que oculta la ubicación del servidor C2, mejorando la seguridad operacional](https://www.optiv.com/insights/source-zero/blog/redirectors-red-teamers-introduction).
+- **Infraestructura como Código (IaC)**: [Gestión de infraestructura mediante código, usando herramientas como Terraform](https://en.wikipedia.org/wiki/Infrastructure_as_code).
+- **DNS (Sistema de Nombres de Dominio)**: [Traduce nombres de dominio a direcciones IP](https://es.wikipedia.org/wiki/Sistema_de_nombres_de_dominio).
+- **Apache**: [Servidor web configurable para operaciones C2](https://httpd.apache.org/).
+- **Terraform**: [Herramienta de IaC para definir y crear infraestructura en la nube](https://www.terraform.io/).
+- **Bucket S3**: [Almacenamiento en la nube de AWS para guardar el estado de Terraform](https://aws.amazon.com/s3/).
+- **CDN (Red de Entrega de Contenidos)**: [Sistema de servidores para entregar contenido web rápidamente](https://es.wikipedia.org/wiki/Red_de_entrega_de_contenido).
+- **AWS CloudFront**: [CDN de Amazon para distribuir contenido con baja latencia](https://aws.amazon.com/cloudfront/).
+- **Listeners C2**: [Componentes que procesan conexiones entrantes en un servidor C2](https://hstechdocs.helpsystems.com/manuals/cobaltstrike/current/userguide/content/topics/listener-infrastructure_main.htm#_Toc65482731).
+- **Payload C2**: [Código enviado a sistemas comprometidos para comunicación con el servidor C2](https://en.wikipedia.org/wiki/Payload_(computing)).
+- **Ansible**: [Herramienta de automatización para configurar y administrar sistemas](https://www.ansible.com/).
+- **VPN (Red Privada Virtual)**: [Conexión segura y encriptada sobre una red menos segura](https://es.wikipedia.org/wiki/Red_privada_virtual).
+- **Security Headers**: [Cabeceras HTTP que mejoran la seguridad de una aplicación web](https://developer.mozilla.org/es/docs/Web/HTTP/Headers).
