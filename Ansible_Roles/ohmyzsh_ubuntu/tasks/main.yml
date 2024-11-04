@@ -10,6 +10,7 @@
   loop:
     - fontconfig
     - build-essential
+    - zsh
 # Validar que los paquetes fontconfig (fc-cache) estén instalados y actualizados a la última versión
 
 - name: Iterar a través de la validación del paquete fontconfig (fc-cache)
@@ -19,6 +20,7 @@
   loop:
     - fontconfig
     - build-essential
+    - zsh
 ### Cargo proglang
 
 # Validar que Cargo esté instalado a nivel de usuario con privilegios bajos
