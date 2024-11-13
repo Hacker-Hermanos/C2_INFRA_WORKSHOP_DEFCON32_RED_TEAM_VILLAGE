@@ -21,7 +21,7 @@ variable "AWS_SECRET_KEY" {
 
 variable "use1_ami_kali_234" {
   type    = string
-  default = "ami-02d46314883bdd49c"
+  default = "ami-061b17d332829ab1c"
   # For Kali Ami Alias: /aws/service/marketplace/prod-tsqyof4l3a3aa/kali-linux-2023.2 @ https://aws.amazon.com/marketplace/pp/prodview-fznsw3f7mq7to
   # For ubuntu: ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230216 - ami-01fb4901e7405cd3d - us-west-1 (N. California) @ https://cloud-images.ubuntu.com/locator/ec2/
 }
