@@ -11,7 +11,7 @@ vhosts_dictionary: [
         # Dominio principal del redirector (ejemplo: ejemplo.com)
         # Este es el dominio que los usuarios legítimos utilizarán para acceder al servicio.
         # Asegúrate de que este dominio esté correctamente configurado en DNS.
-        redirector_domain: 'test.robertepimentel.com',
+        redirector_domain: 'test2.robertepimentel.com',
         # Dominio señuelo que se mostrará a los visitantes no autorizados
         # Este dominio se utiliza para engañar a los usuarios no autorizados,
         # redirigiéndolos a un sitio diferente. Asegúrate de que este dominio no revele información sensible.
@@ -55,7 +55,7 @@ vhosts_dictionary: [
                 # Primera definición de ruta
                 # Define una ruta específica que el redirector debe manejar.
                 name: 'hackerhermanos',
-                path: '/hackerhermanos'
+                path: 'hackerhermanos'
             }
             # Añade más definiciones de rutas URI según sea necesario
         ],

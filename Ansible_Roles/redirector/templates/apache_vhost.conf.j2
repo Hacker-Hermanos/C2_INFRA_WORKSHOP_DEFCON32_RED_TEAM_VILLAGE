@@ -42,14 +42,14 @@ DEFINE {{ backend_teamserver.name }} {{ backend_teamserver.vpn_ip }}
 RewriteCond %{HTTP_USER_AGENT} (google|yandex|bingbot|Googlebot|bot|spider|simple|BBBike|wget|cloudfront|curl|Python|Wget|crawl|baidu|Lynx|xforce|HTTrack|Slackbot|netcraft|NetcraftSurveyAgent|Netcraft|shodan) [NC]
 RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
 
-# Sección para configuraciones previas personalizadas
+# Configuraciones previas personalizadas
 {% if item.pre_configs is defined %}
 {% for config in item.pre_configs %}
 {{ config}}
 {% endfor %}
 {% endif %}
 
-# Incluye archivos de configuración adicionales si están definidos
+# Incluir archivos de configuración adicionales si están definidos
 {% if item.config_files is defined %}
 {% for config_file in item.config_files %}
 {{ lookup('file', config_file) }} 
@@ -64,19 +64,19 @@ RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
 {% endfor %}
 {% endif %}
 
-# Define las rutas URI personalizadas
+# Definiciones de rutas URI personalizadas
 {% if item.uri_path_definitions is defined %}
 {% for uri in item.uri_path_definitions %}
-Define {{ uri.name }} {{ uri.path }}
+Define {{ uri.name }} ^/{{ uri.path }}
 {% endfor %}
 {% endif %}
 
-# Configuración de reglas de reescritura para filtrar y redirigir tráfico
+# Condiciones de reescritura para filtrar y redirigir tráfico específico
 {% if item.rewrite_rule_filters is defined %}
 {% for c in item.rewrite_rule_filters %}
-RewriteCond %{REQUEST_URI} {{ c.rewritefilter }}
-RewriteRule ^(.*)$ %{REQUEST_SCHEME}://{{ c.backend_teamserver }}:{{ c.backend_forward_port }}%{REQUEST_URI} [P,NE,L]
-ProxyPassReverse ^ %{REQUEST_SCHEME}://{{ c.backend_teamserver }}:{{ c.backend_forward_port }}%{REQUEST_URI} [P,NE]
+RewriteCond %{REQUEST_URI} ^$({{ c.rewritefilter }}).*$
+RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${{{ c.backend_teamserver }}}:{{ c.backend_forward_port }}%{REQUEST_URI} [P,NE,L]
+ProxyPassReverse ^ %{REQUEST_SCHEME}://${{{ c.backend_teamserver }}}:{{ c.backend_forward_port }}%{REQUEST_URI} [P,NE]
 {% endfor %}
 {% endif %}
 

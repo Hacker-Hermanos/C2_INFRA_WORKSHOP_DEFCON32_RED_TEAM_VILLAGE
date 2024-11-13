@@ -92,16 +92,16 @@ RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
 # Definiciones de rutas URI personalizadas
 {% if item.uri_path_definitions is defined %}
 {% for uri in item.uri_path_definitions %}
-Define {{ uri.name }} {{ uri.path }}
+Define {{ uri.name }} ^/{{ uri.path }}
 {% endfor %}
 {% endif %}
 
 # Condiciones de reescritura para filtrar y redirigir tráfico específico
 {% if item.rewrite_rule_filters is defined %}
 {% for c in item.rewrite_rule_filters %}
-RewriteCond %{REQUEST_URI} {{ c.rewritefilter }}
-RewriteRule ^(.*)$ %{REQUEST_SCHEME}://{{ c.backend_teamserver }}:{{ c.backend_forward_port }}%{REQUEST_URI} [P,NE,L]
-ProxyPassReverse ^ %{REQUEST_SCHEME}://{{ c.backend_teamserver }}:{{ c.backend_forward_port }}%{REQUEST_URI} [P,NE]
+RewriteCond %{REQUEST_URI} ^$({{ c.rewritefilter }}).*$
+RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${{{ c.backend_teamserver }}}:{{ c.backend_forward_port }}%{REQUEST_URI} [P,NE,L]
+ProxyPassReverse ^ %{REQUEST_SCHEME}://${{{ c.backend_teamserver }}}:{{ c.backend_forward_port }}%{REQUEST_URI} [P,NE]
 {% endfor %}
 {% endif %}
 
