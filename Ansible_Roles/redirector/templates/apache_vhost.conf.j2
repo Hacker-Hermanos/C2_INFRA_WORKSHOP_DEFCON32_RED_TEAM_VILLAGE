@@ -33,7 +33,7 @@ DEFINE {{ backend_teamserver.name }} {{ backend_teamserver.vpn_ip }}
 
 # https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html
 # RewriteRule: If the request contains "/<URI_PATH_C2_TRAFFIC>/", redirect to C2 VPN IPs. If it does not contain the "/<URI_PATH_C2_TRAFFIC>/", traffic will match the RewriteRule for <DECOY_DOMAIN>.<TLD>.
-Include /etc/apache2/redirect.rules
+# Include /etc/apache2/redirect.rules
 
 # Specify User Agents to be blocked
 RewriteCond %{HTTP_USER_AGENT} (google|yandex|bingbot|Googlebot|bot|spider|simple|BBBike|wget|cloudfront|curl|Python|Wget|crawl|baidu|Lynx|xforce|HTTrack|Slackbot|netcraft|NetcraftSurveyAgent|Netcraft|shodan) [NC]

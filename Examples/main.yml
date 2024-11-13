@@ -1,0 +1,77 @@
+---
+# Variable file for the Ansible Role 'redirector'
+# This file defines the main configuration for a redirector server
+# that handles traffic between domains and backend servers
+# This file lives in Ansible_Roles/redirector/vars/main.yml
+
+vhosts_dictionary: [
+    {
+    # Configuration for the first hostname (virtual server)
+    # This section defines how the redirector will behave for a specific domain
+        # Main domain of the redirector (example: example.com)
+        # This is the domain that legitimate users will use to access the service.
+        # Ensure that this domain is correctly configured in DNS.
+        redirector_domain: 'test.robertepimentel.com',
+        # Decoy domain that will be shown to unauthorized visitors
+        # This domain is used to deceive unauthorized users,
+        # redirecting them to a different site. Ensure that this domain does not reveal sensitive information.
+        decoy_domain: 'www.hackerhermanos.com',
+        # Port for unencrypted HTTP traffic
+        # Traffic on this port is not encrypted, meaning it is susceptible to interception.
+        # Consider redirecting all HTTP traffic to HTTPS for greater security.
+        http_port: 80,
+        # Port for encrypted HTTPS traffic
+        # HTTPS encrypts the traffic, protecting sensitive information during transmission.
+        # Ensure you have a valid SSL certificate for this port.
+        https_port: 443,
+        # Server signature that will be shown in HTTP responses
+        # The server signature can reveal information about the software and version you are using.
+        # Consider hiding or modifying this signature to prevent attackers from obtaining useful information.
+        server_signature: "Microsoft-IIS/10.0",
+        # List of backend servers (TeamServers) that will receive redirected traffic
+        # These are the servers that will actually process the requests after being redirected.
+        # Ensure these servers are protected and only accept traffic from the redirector.
+        backend_teamservers: [
+            {
+                # Production server
+                # This is the main server that handles live traffic.
+                # Ensure it is well protected and monitored.
+                name: 'TeamServer_TS0',
+                vpn_ip: '100.119.62.116'
+            },
+        ],  # Add a comma here to separate the list items
+        # HTTP headers required to authenticate legitimate requests
+        # These headers are used to verify that requests come from authorized clients.
+        # Ensure these headers are difficult to guess and kept secret.
+        required_http_header: [
+            'Hacker-Hermanos-Is-The-Best'
+            # '<ADDITIONAL_HEADER>' # Add additional headers as needed
+        ],
+        # URI path definitions that the redirector will process
+        # These are the specific paths that the redirector will handle.
+        # Ensure the paths do not expose sensitive information or undesired functionalities.
+        uri_path_definitions: [
+            {
+                # First path definition
+                # Define a specific path that the redirector should handle.
+                name: 'hackerhermanos',
+                path: '/hackerhermanos'
+            }
+            # Add more URI path definitions as needed
+        ],
+        # Rewrite rules to direct traffic to backend servers
+        # These rules determine how traffic is redirected to backend servers.
+        # Ensure the rules are precise to avoid incorrect redirections.
+        rewrite_rule_filters: [
+            {
+                # Rule for the production server
+                # This rule redirects traffic to the production server.
+                # Ensure the port and IP are correct.
+                rewritefilter: 'hackerhermanos',
+                backend_forward_port: '4443',
+                backend_teamserver: 'TeamServer_TS0'
+            }
+            # Add more filters as needed
+        ]
+    }
+]
