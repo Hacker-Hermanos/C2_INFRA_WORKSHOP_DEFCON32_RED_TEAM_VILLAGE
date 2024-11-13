@@ -7,6 +7,16 @@
 3. Reconfigura los listeners C2 para que se comuniquen con la URL de la CDN
 4. Genera payloads C2 que se conecten a la URL de la CDN
 
+## Instrucciones para Configurar la Distribución de CloudFront
+
+En el archivo `cf_distributions.tf`, encontrarás varios placeholders que deben ser reemplazados con valores específicos de tu configuración. Aquí te explicamos cómo hacerlo:
+
+- `<REDIRECTOR_DOMAIN_TLD>`: Este es un identificador único para tu distribución de CloudFront. Debe ser reemplazado por el nombre de dominio de tu redirector, por ejemplo, `example_com_cdn_1`.
+
+- `<REDIRECTOR_DOMAIN.TLD>`: Este es el nombre de dominio del servidor de origen (redirector) que CloudFront utilizará para distribuir el contenido. Reemplázalo con tu dominio real, por ejemplo, `example.com`.
+
+- `<OPERATIONYEAR-MONTH-OPERATIONNAME-OPERATIONTYPE>`: Este es un comentario descriptivo para tu distribución de CloudFront. Debe ser reemplazado con detalles específicos de tu operación, por ejemplo, `2024-NOV-ITPR-OP` para una operacion de Red Team en el ITPR o `2024-DEC-BANCOPOPULAR-PTE` para un ejercicio de Purple Team en para el Banco Popular.
+
 ## ¡Retos del Ejercicio 4!
 
 ¿Listo para más? Intenta estos desafíos adicionales:

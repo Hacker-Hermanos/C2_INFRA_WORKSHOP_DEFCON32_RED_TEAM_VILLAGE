@@ -9,10 +9,10 @@ terraform {
     aws = {
       # 'source' indica de dónde descargar el proveedor
       # hashicorp/aws significa que es el proveedor oficial de AWS mantenido por HashiCorp
-      source  = "hashicorp/aws"
+      source = "hashicorp/aws"
       # 'version' especifica la versión exacta del proveedor que queremos usar
       # Esto es importante para mantener la consistencia y evitar problemas de compatibilidad
-      version = "5.57.0"
+      version = "5.75.1"
     }
   }
 

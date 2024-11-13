@@ -1,41 +1,51 @@
 ---
 # Este archivo contiene las tareas principales para instalar y configurar Mythic C2
 
-# SECCIÓN 1: Instalación y Configuración de Docker Compose
-# Instalación inicial de Docker Compose y configuración de sus componentes básicos
-- name: Instalar Docker Compose standalone
-  # Descarga la versión específica de Docker Compose desde GitHub y la instala en el sistema
-  # Docker Compose es una herramienta que permite gestionar múltiples contenedores Docker
-  ansible.builtin.get_url:
-    url: https://github.com/docker/compose/releases/download/v2.29.1/docker-compose-linux-x86_64
-    dest: /usr/local/bin/docker-compose
-    mode: '0755'  # Establece permisos de ejecución para el archivo (rwxr-xr-x)
-
-- name: Asegurar que docker-compose tenga permisos ejecutables
-  # Asegura que Docker Compose tenga los permisos correctos para ejecutarse
-  # Esta tarea es redundante por seguridad, en caso de que los permisos no se hayan establecido correctamente
-  ansible.builtin.file:
-    path: /usr/local/bin/docker-compose
-    mode: '0755'  # Permisos: propietario puede leer/escribir/ejecutar, otros pueden leer/ejecutar
-    state: file
-
-- name: Crear un enlace simbólico para docker-compose en /usr/bin
-  # Crea un enlace simbólico para que docker-compose sea accesible desde cualquier ubicación del sistema
-  ansible.builtin.file:
-    src: /usr/local/bin/docker-compose
-    dest: /usr/bin/docker-compose
-    state: link
-  become: true  # Ejecuta esta tarea con privilegios de superusuario
-
-- name: Validar la instalación de docker-compose
-  # Verifica que Docker Compose se haya instalado correctamente ejecutando el comando version
-  ansible.builtin.command:
-    cmd: docker-compose --version
-  register: result  # Guarda el resultado del comando en una variable
-  failed_when: result.rc != 0  # Falla si el comando no se ejecuta correctamente
-  changed_when: false  # Indica que esta tarea no modifica el sistema
+## SECCIÓN 1: Instalación y Configuración de Docker Compose
+## Instalación inicial de Docker Compose y configuración de sus componentes básicos
+#- name: Instalar Docker Compose standalone
+#  # Descarga la versión específica de Docker Compose desde GitHub y la instala en el sistema
+#  # Docker Compose es una herramienta que permite gestionar múltiples contenedores Docker
+#  ansible.builtin.get_url:
+#    url: https://github.com/docker/compose/releases/download/v2.29.1/docker-compose-linux-x86_64
+#    dest: /usr/local/bin/docker-compose
+#    mode: '0755'  # Establece permisos de ejecución para el archivo (rwxr-xr-x)
+#
+#- name: Asegurar que docker-compose tenga permisos ejecutables
+#  # Asegura que Docker Compose tenga los permisos correctos para ejecutarse
+#  # Esta tarea es redundante por seguridad, en caso de que los permisos no se hayan establecido correctamente
+#  ansible.builtin.file:
+#    path: /usr/local/bin/docker-compose
+#    mode: '0755'  # Permisos: propietario puede leer/escribir/ejecutar, otros pueden leer/ejecutar
+#    state: file
+#
+#- name: Crear un enlace simbólico para docker-compose en /usr/bin
+#  # Crea un enlace simbólico para que docker-compose sea accesible desde cualquier ubicación del sistema
+#  ansible.builtin.file:
+#    src: /usr/local/bin/docker-compose
+#    dest: /usr/bin/docker-compose
+#    state: link
+#  become: true  # Ejecuta esta tarea con privilegios de superusuario
+#
+#- name: Validar la instalación de docker-compose
+#  # Verifica que Docker Compose se haya instalado correctamente ejecutando el comando version
+#  ansible.builtin.command:
+#    cmd: docker-compose --version
+#  register: result  # Guarda el resultado del comando en una variable
+#  failed_when: result.rc != 0  # Falla si el comando no se ejecuta correctamente
+#  changed_when: false  # Indica que esta tarea no modifica el sistema
 
 # SECCIÓN 2: Instalación de Paquetes Prerequisitos
+- name: Actualizar cache de apt
+  # Actualiza la lista de paquetes disponibles
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Actualizar todos los paquetes
+  # Actualiza todos los paquetes instalados a su última versión
+  ansible.builtin.apt:
+    upgrade: true
+
 - name: Validar paquetes expect y prerequisitos en un bucle
   # Instala y actualiza todos los paquetes necesarios para que Mythic funcione correctamente
   ansible.builtin.apt:
@@ -85,7 +95,22 @@
     repo: "{{ mythic_repo }}"
     dest: "{{ installation_path }}"
     version: "{{ mythic_version }}"
+    force: true  # Fuerza la actualización, sobrescribiendo cambios locales
   become: true  # Ejecuta esta tarea con privilegios de superusuario
+
+- name: Asegurar que el script install_docker_kali.sh tenga permisos ejecutables
+  # Establece permisos de ejecución para el script de instalación de Docker en Kali
+  ansible.builtin.file:
+    path: /opt/TA0011_C2/Mythic/install_docker_kali.sh
+    mode: '0755'  # Permisos: propietario puede leer/escribir/ejecutar, otros pueden leer/ejecutar
+    state: file
+
+- name: Ejecutar el script install_docker_kali.sh
+  # Ejecuta el script de instalación de Docker en Kali
+  ansible.builtin.command: sudo /opt/TA0011_C2/Mythic/install_docker_kali.sh
+  register: install_docker_result
+  failed_when: install_docker_result.rc != 0
+  changed_when: false  # Indica que esta tarea no modifica el sistema
 
 - name: Verificar la configuración de mythic
   # Verifica si existe el archivo de configuración de Mythic
@@ -93,38 +118,61 @@
     path: "{{ installation_path }}/.env"
   register: env_stat  # Guarda el resultado para uso posterior
 
-- name: Compilar Mythic_CLI
-  # Compila la herramienta de línea de comandos de Mythic
-  ansible.builtin.command: make
-  args:
-    chdir: "{{ installation_path }}"  # Cambia al directorio de instalación antes de ejecutar el comando
-  when: not env_stat.stat.exists  # Solo compila si el archivo de configuración no existe
-  become: true  # Ejecuta esta tarea con privilegios de superusuario
-  become_user: root  # Ejecuta esta tarea como el usuario root
-  changed_when: false  # Indica que esta tarea no modifica el sistema
-
-- name: Obtener información del contenedor de Mythic
-  # Obtiene información sobre el contenedor Docker de Mythic
-  community.docker.docker_container_info:
-    name: mythic_server
-  register: mythic_result  # Guarda el resultado para uso posterior
+- name: Cambiar propietario y grupo de /opt recursivamente al usuario remoto
+  # Cambia el propietario y grupo del directorio /opt y todo su contenido al usuario remoto actual
+  ansible.builtin.file:
+    path: /opt
+    owner: "{{ ansible_user | default(lookup('env', 'USER')) }}"
+    group: "{{ ansible_user | default(lookup('env', 'USER')) }}"
+    recurse: true
   become: true  # Ejecuta esta tarea con privilegios de superusuario
 
-- name: Iniciar Mythic
-  # Inicia el servidor Mythic usando la herramienta de línea de comandos
-  ansible.builtin.command: "{{ installation_path }}/mythic-cli start"
+
+- name: Ejecutar 'make' en el directorio principal de Mythic
+  # Ejecuta el comando 'make' en el directorio principal de Mythic
+  ansible.builtin.command: "make"
   args:
     chdir: "{{ installation_path }}"  # Cambia al directorio de instalación antes de ejecutar el comando
-  when: not mythic_result.exists  # Solo inicia si el contenedor no existe
-  become_user: root  # Ejecuta esta tarea como el usuario root
   become: true  # Ejecuta esta tarea con privilegios de superusuario
+  register: make_result
+  failed_when: make_result.rc != 0
   changed_when: false  # Indica que esta tarea no modifica el sistema
+
+- name: Cambiar propietario y grupo de /opt recursivamente al usuario remoto
+  # Cambia el propietario y grupo del directorio /opt y todo su contenido al usuario remoto actual
+  ansible.builtin.file:
+    path: /opt
+    owner: "{{ ansible_user | default(lookup('env', 'USER')) }}"
+    group: "{{ ansible_user | default(lookup('env', 'USER')) }}"
+    recurse: true
+  become: true  # Ejecuta esta tarea con privilegios de superusuario
+
+#- name: Asegurar que el servicio Docker esté iniciado
+#  # Inicia el servicio Docker si no está ya en ejecución
+#  ansible.builtin.service:
+#    name: docker
+#    state: started
+#    enabled: true
+#  become: true  # Ejecuta esta tarea con privilegios de superusuario
+
+- name: Verificar si el contenedor de Mythic existe
+  # Verifica si el contenedor de Mythic ya está en ejecución
+  ansible.builtin.command: "docker ps -q -f name=mythic"
+  register: mythic_result
+  changed_when: false  # Indica que esta tarea no modifica el sistema
+
+## Ensure mythic_result has the expected structure
+- name: Set fact for mythic_result existence
+  ansible.builtin.set_fact:  # Use the FQCN for the set_fact module
+    mythic_result_exists: "{{ mythic_result.stdout != '' }}"
 
 - name: Instalar Agentes
   # Incluye las tareas para instalar los agentes de Mythic definidos en la configuración
   ansible.builtin.include_tasks: install_agents.yml
   vars:
-    agent: "{{ item }}"  # Pasa cada agente como variable a la tarea incluida
+    # Pasa cada agente como variable a la tarea incluida
+    agent: "{{ item }}"
+    mythic_result_exists: "{{ mythic_result_exists }}"
   loop: "{{ agents }}"  # Itera sobre la lista de agentes
 
 # SECCIÓN 5: Limpieza y Finalización
@@ -139,7 +187,7 @@
 - name: Detener docker-compose de Mythic
   # Detiene todos los contenedores de Mythic y limpia los recursos huérfanos
   # Esto asegura que no queden contenedores o recursos sin usar en el sistema
-  ansible.builtin.command: "docker-compose down --remove-orphans"
+  ansible.builtin.command: "docker compose down --remove-orphans"
   args:
     chdir: "{{ installation_path }}"  # Cambia al directorio de instalación antes de ejecutar el comando
   become: true  # Ejecuta esta tarea con privilegios de superusuario

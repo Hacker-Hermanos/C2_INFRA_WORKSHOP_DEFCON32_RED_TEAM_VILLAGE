@@ -3,7 +3,7 @@
 # Para principiantes: La región es una ubicación geográfica donde AWS tiene sus centros de datos
 variable "AWS_REGION" {
   # 'type = string' indica que esta variable debe ser texto
-  type    = string
+  type = string
   # 'default' establece el valor predeterminado como la región este de EE.UU.
   default = "us-east-1"
 }
@@ -26,7 +26,7 @@ variable "AWS_SECRET_KEY" {
 # AMI (Amazon Machine Image) es una plantilla que contiene el sistema operativo y software preconfigurado
 variable "use1_ami_kali_234" {
   type    = string
-  default = "ami-02d46314883bdd49c"
+  default = "ami-061b17d332829ab1c"
   # Para Kali AMI Alias: /aws/service/marketplace/prod-tsqyof4l3a3aa/kali-linux-2023.2 en https://aws.amazon.com/marketplace/pp/prodview-fznsw3f7mq7to
   # Para Ubuntu: ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230216 - ami-01fb4901e7405cd3d - us-west-1 (N. California) en https://cloud-images.ubuntu.com/locator/ec2/
 }
@@ -118,23 +118,34 @@ variable "allowlist_cidr" {
   type    = string
   default = "X.X.X.X/32" # IP de origen específica
 }
+## Variable para permitir acceso desde una IP específica
+#variable "allowlist_cidr" {
+#  type    = string
+#  default = "139.60.187.197/32" # IP de origen específica
+#}
+
+# # Variable para permitir acceso desde una IP específica
+# variable "allowlist_cidr" {
+#   type    = string
+#   default = "173.215.0.0/16" # IP de origen específica
+# }
 
 # Variable para la contraseña de elevación de privilegios en Ansible
-variable "ansible_become" { 
+variable "ansible_become" {
   description = "Contraseña de Kali para Ansible Become"
   type        = string
   default     = "kali"
 }
 
 # Variable para el usuario de Ansible en Ubuntu
-variable "ubuntu_ansible_become_user" { 
+variable "ubuntu_ansible_become_user" {
   description = "Usuario de Ansible Become - usuario con privilegios bajos del SO"
   type        = string
   default     = "ubuntu"
 }
 
 # Variable para el usuario de Ansible en Kali
-variable "kali_ansible_become_user" { 
+variable "kali_ansible_become_user" {
   description = "Usuario de Ansible Become - usuario con privilegios bajos del SO"
   type        = string
   default     = "kali"

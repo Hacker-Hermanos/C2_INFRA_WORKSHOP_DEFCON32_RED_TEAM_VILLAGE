@@ -7,7 +7,7 @@
 variable "AWS_REGION" {
   # El tipo "string" indica que esta variable debe contener texto
   # Para principiantes: Los tipos de variables ayudan a Terraform a validar los valores
-  type    = string
+  type = string
   # El valor predeterminado es "us-east-1" si no se especifica otro
   # Este es uno de los centros de datos más comunes y económicos de AWS
   default = "us-east-1"

@@ -4,7 +4,7 @@
 resource "local_file" "update_aws_ec2_hostnames" {
   # El contenido del script que se creará usando la sintaxis heredoc (<<-EOT)
   # EOT permite escribir texto multilínea de forma más legible
-  content  = <<-EOT
+  content = <<-EOT
   #!/bin/bash
 
   # Verifica si el script se ejecuta como root (administrador)
@@ -83,7 +83,7 @@ resource "aws_instance" "C2_TeamServer" {
     # Requiere el uso de IMDSv2, que es más seguro que IMDSv1
     # IMDSv2 usa tokens de sesión para acceder a los metadatos de la instancia
     http_tokens = "required"
-    
+
     # Limita el número de saltos de red permitidos para acceder al servicio de metadatos
     # El valor 1 significa que solo la propia instancia puede acceder a sus metadatos
     http_put_response_hop_limit = 1
@@ -137,7 +137,7 @@ resource "aws_instance" "C2_TeamServer" {
 # Esto es útil para mantener una dirección IP constante incluso si la instancia se detiene y reinicia
 resource "aws_eip" "C2_TeamServer_eip" {
   # Número de IPs elásticas a crear
-  count    = 1
+  count = 1
   # Asociar la IP elástica con la instancia correspondiente
   instance = aws_instance.C2_TeamServer[count.index].id
 }
@@ -151,18 +151,24 @@ resource "aws_instance" "C2_Redirector" {
   # Tipo de instancia que define los recursos de hardware
   instance_type = var.instance_type_C2_redirector
 
+  # Nombre del par de claves SSH que se usará para conectarse a la instancia
+  key_name = aws_key_pair.key_pair.key_name
+
   # Aplicar el grupo de seguridad específico para el redirector
   vpc_security_group_ids = [aws_security_group.C2_Redirector_SG.id]
 
   # Crear una sola instancia redirector
-  count     = 1
+  count = 1
+
+  # ID de la subred donde se creará la instancia
+  subnet_id = aws_subnet.prod-subnet-public-1.id
 
   # Asignar una IP privada predefinida
   private_ip = var.list_private_ips_C2_Redirectors[count.index]
 
   # Configuración de seguridad para los metadatos
   metadata_options {
-    http_tokens = "required"
+    http_tokens                 = "required"
     http_put_response_hop_limit = 1
   }
 

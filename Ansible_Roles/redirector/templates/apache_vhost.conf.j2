@@ -36,7 +36,7 @@ DEFINE {{ backend_teamserver.name }} {{ backend_teamserver.vpn_ip }}
 
 # Reglas de reescritura: Si la solicitud contiene "/<URI_PATH_C2_TRAFFIC>/", redirige a las IPs VPN de C2.
 # Si no contiene "/<URI_PATH_C2_TRAFFIC>/", el tráfico coincidirá con la regla de reescritura para <DECOY_DOMAIN>.<TLD>.
-Include /etc/apache2/redirect.rules
+# Include /etc/apache2/redirect.rules
 
 # Especifica los User Agents que serán bloqueados y redirigidos al dominio señuelo
 RewriteCond %{HTTP_USER_AGENT} (google|yandex|bingbot|Googlebot|bot|spider|simple|BBBike|wget|cloudfront|curl|Python|Wget|crawl|baidu|Lynx|xforce|HTTrack|Slackbot|netcraft|NetcraftSurveyAgent|Netcraft|shodan) [NC]

@@ -107,7 +107,7 @@ plan_terraform() {
 apply_terraform() {
     log "INFO" "Aplicando cambios de Terraform..."
     terraform apply --auto-approve "$PLAN_PATH"
-    log "INFO" "¡Aplicación completada exitosamente!"
+    log "INFO" "¡Los recursos han sido desplegados exitosamente!"
 }
 
 # Función para destruir la infraestructura existente

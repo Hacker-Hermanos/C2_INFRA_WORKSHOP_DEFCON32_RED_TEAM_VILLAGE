@@ -9,13 +9,13 @@ resource "tls_private_key" "ssh-key" {
   # Especificamos RSA como el algoritmo de cifrado para la clave
   algorithm = "RSA"
   # Definimos el tamaño de la clave en bits - 4096 proporciona un alto nivel de seguridad
-  rsa_bits  = 4096
+  rsa_bits = 4096
 }
 
 # Este recurso crea un par de claves en AWS usando la clave pública generada anteriormente
 resource "aws_key_pair" "key_pair" {
   # Generamos un nombre único para la clave usando una cadena aleatoria
-  key_name   = "SSH-Key-${random_string.resource_code.result}"
+  key_name = "SSH-Key-${random_string.resource_code.result}"
   # Usamos la clave pública generada en formato OpenSSH
   public_key = tls_private_key.ssh-key.public_key_openssh
 }
@@ -23,9 +23,9 @@ resource "aws_key_pair" "key_pair" {
 # Este recurso guarda la clave privada en un archivo local con extensión .pem
 resource "local_file" "ssh_key" {
   # El nombre del archivo será el mismo que el par de claves en AWS con extensión .pem
-  filename        = "${aws_key_pair.key_pair.key_name}.pem"
+  filename = "${aws_key_pair.key_pair.key_name}.pem"
   # Guardamos la clave privada en formato PEM
-  content         = tls_private_key.ssh-key.private_key_pem
+  content = tls_private_key.ssh-key.private_key_pem
   # Establecemos permisos 0600 (solo lectura/escritura para el propietario) por seguridad
   file_permission = "0600"
 }
@@ -33,9 +33,9 @@ resource "local_file" "ssh_key" {
 # Este recurso guarda la clave pública en un archivo local con extensión .pub
 resource "local_file" "ssh_key_pub" {
   # El nombre del archivo será el mismo que el par de claves en AWS con extensión .pub
-  filename        = "${aws_key_pair.key_pair.key_name}.pub"
+  filename = "${aws_key_pair.key_pair.key_name}.pub"
   # Guardamos la clave pública en formato OpenSSH
-  content         = tls_private_key.ssh-key.public_key_openssh
+  content = tls_private_key.ssh-key.public_key_openssh
   # Establecemos permisos 0600 (solo lectura/escritura para el propietario) por seguridad
   file_permission = "0600"
 }

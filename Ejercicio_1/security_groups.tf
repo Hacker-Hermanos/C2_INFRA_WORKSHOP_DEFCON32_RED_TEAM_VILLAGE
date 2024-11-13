@@ -2,7 +2,7 @@
 # Un grupo de seguridad actúa como un firewall virtual que controla el tráfico entrante y saliente
 resource "aws_security_group" "C2_TeamServer_SG" {
   # Nombre descriptivo del grupo de seguridad que incluye el año, mes y tipo de operación
-  name   = "C2 TeamServer Security Groups for YYYY-MO-OPERATION_NAME-OPERATION_TYPE"
+  name = "C2 TeamServer Security Groups for YYYY-MO-OPERATION_NAME-OPERATION_TYPE"
   # Asociamos el grupo de seguridad con nuestra VPC creada anteriormente
   vpc_id = aws_vpc.prod-vpc.id
   # Etiquetas para identificar el propósito de las reglas (en este caso VPN)
@@ -46,7 +46,7 @@ resource "aws_security_group" "C2_TeamServer_SG" {
 # El redirector actúa como intermediario entre Internet y el servidor C2
 resource "aws_security_group" "C2_Redirector_SG" {
   # Nombre descriptivo para el grupo de seguridad del redirector
-  name   = "C2 Redirectors Security Groups for YYYY-MO-OPERATION_NAME-OPERATION_TYPE"
+  name = "C2 Redirectors Security Groups for YYYY-MO-OPERATION_NAME-OPERATION_TYPE"
   # Asociamos el grupo de seguridad con nuestra VPC
   vpc_id = aws_vpc.prod-vpc.id
   # Etiquetas que describen los servicios permitidos: VPN, DNS y HTTP/HTTPS

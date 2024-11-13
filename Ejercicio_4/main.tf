@@ -7,10 +7,10 @@ terraform {
     # Configuramos el proveedor de AWS que nos permitirá crear recursos en Amazon Web Services
     aws = {
       # La fuente indica de dónde se descargará el proveedor
-      source  = "hashicorp/aws"
+      source = "hashicorp/aws"
       # La versión específica del proveedor que queremos usar
       # Es importante fijar una versión para evitar cambios inesperados
-      version = "5.57.0"
+      version = "5.75.1"
     }
   }
 

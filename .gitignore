@@ -71,6 +71,39 @@ venv/
 aws.config
 credentials
 
+# Archivos de claves SSH y RSA
+# Archivos que contienen material criptográfico privado
+# Para principiantes: estos archivos NUNCA deben compartirse ya que dan acceso a sistemas
+*.pem
+*.key
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+id_ecdsa
+id_ecdsa.*
+id_dsa
+id_dsa.*
+*.ppk
+.ssh/
+known_hosts
+authorized_keys
+
+# Otros archivos de claves y certificados
+# Archivos que contienen material criptográfico sensible
+# Para principiantes: estos archivos contienen secretos que no deben exponerse
+*.crt
+*.csr
+*.p12
+*.pfx
+*.keystore
+*.jks
+private.key
+*.priv
+*.secret
+*.asc
+
+
 # Archivos de Ansible
 # Archivos generados cuando Ansible reintenta una tarea fallida
 # Para principiantes: estos son archivos temporales de diagnóstico

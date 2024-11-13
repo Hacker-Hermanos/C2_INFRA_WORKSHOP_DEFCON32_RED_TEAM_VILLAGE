@@ -60,7 +60,7 @@ DEFINE {{ backend_teamserver.name }} {{ backend_teamserver.vpn_ip }}
 # Documentación de mod_rewrite: https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html
 # RewriteRule: Si la solicitud contiene "/<URI_PATH_C2_TRAFFIC>/", redirige a las IPs VPN C2. 
 # Si no contiene "/<URI_PATH_C2_TRAFFIC>/", el tráfico coincidirá con la RewriteRule para <DECOY_DOMAIN>.<TLD>.
-Include /etc/apache2/redirect.rules
+# Include /etc/apache2/redirect.rules
 
 # Especificar User Agents que serán bloqueados
 # Bloquea agentes de usuario comunes de bots para evitar accesos no deseados
