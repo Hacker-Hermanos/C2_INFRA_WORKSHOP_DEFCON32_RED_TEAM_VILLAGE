@@ -23,6 +23,21 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+# Archivos de plan de Terraform
+# Los archivos de plan muestran los cambios que Terraform realizará
+# Para principiantes: estos archivos pueden contener información sensible sobre tu infraestructura
+*.tfplan
+*tfplan.*
+# Archivos de respaldo que Terraform crea antes de hacer cambios significativos
+# Para principiantes: estos son archivos temporales que no necesitan control de versiones
+*.backup
+# Archivos de registro de Terraform
+# Para principiantes: contienen información detallada de las operaciones de Terraform
+*.log
+# Archivos de variables de entorno de Terraform
+# Para principiantes: pueden contener información sensible
+.terraformrc
+terraform.rc
 
 # Archivos de Python
 # Archivos y directorios generados durante la ejecución y compilación de código Python
@@ -51,7 +66,6 @@ wheels/
 # Para principiantes: el entorno virtual aísla las dependencias de cada proyecto
 venv/
 .env
-
 # Archivos de Visual Studio Code
 # Archivos de configuración específicos del editor de código
 # Para principiantes: estos archivos contienen configuraciones personales del editor
@@ -63,14 +77,12 @@ venv/
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
-
 # Archivos de AWS
 # Archivos que contienen configuraciones y credenciales de acceso a AWS
 # Para principiantes: estos archivos contienen información sensible de autenticación
 .aws/
 aws.config
 credentials
-
 # Archivos de claves SSH y RSA
 # Archivos que contienen material criptográfico privado
 # Para principiantes: estos archivos NUNCA deben compartirse ya que dan acceso a sistemas
@@ -88,7 +100,6 @@ id_dsa.*
 .ssh/
 known_hosts
 authorized_keys
-
 # Otros archivos de claves y certificados
 # Archivos que contienen material criptográfico sensible
 # Para principiantes: estos archivos contienen secretos que no deben exponerse
@@ -102,22 +113,17 @@ private.key
 *.priv
 *.secret
 *.asc
-
-
 # Archivos de Ansible
 # Archivos generados cuando Ansible reintenta una tarea fallida
 # Para principiantes: estos son archivos temporales de diagnóstico
 *.retry
-
 # Archivos temporales de Bash
 # Archivos generados durante la ejecución de scripts de shell
 # Para principiantes: archivos temporales que no deben guardarse en el repositorio
-*.log
 *.tmp
 *.temp
 *.swp
 *~
-
 # Archivos del Sistema Operativo
 # Archivos de metadatos y caché generados por diferentes sistemas operativos
 # Para principiantes: estos archivos no son parte de tu código y no deben versionarse
