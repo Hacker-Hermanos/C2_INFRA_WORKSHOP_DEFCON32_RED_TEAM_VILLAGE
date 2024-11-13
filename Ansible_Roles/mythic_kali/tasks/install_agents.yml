@@ -1,27 +1,48 @@
+# Task 1: Verify that required variables are defined
+# This task checks that we have all necessary variables before proceeding
+# - 'agent': information about the Mythic agent we are going to install
+# - 'installation_path': the path where we will install Mythic
 - name: Assert mandatory variables
   ansible.builtin.assert:
     that:
       - agent is defined
       - installation_path
-  become: true
+  become: true  # This allows the task to run with superuser privileges (sudo)
+
+# Task 1.5: Install Mythic modules from the specified repository
+# Runs the mythic-cli command to install an agent from GitHub
+# Only runs when mythic_result.exists is false (when the agent is not installed)
 - name: Install Mythic Modules "{{ agent.repo }}"
   ansible.builtin.command: "./mythic-cli install github {{ agent.repo }} {{ agent.branch }} -f"
-  when: not mythic_result.exists
   args:
-    chdir: "{{ installation_path }}"
-  become: true
-  become_user: root
-  changed_when: false
+    chdir: "{{ installation_path }}"  # Change to the installation directory before executing
+  become: true  # Run as superuser
+  become_user: root  # Specifically as the root user
+  changed_when: false  # Tells Ansible not to consider this step as a change
+
+# Task 2: Stop the Mythic service using mythic-cli
+# This task stops the Mythic instance using the command provided by the tool
 - name: Stop Mythic using ./mythic-cli
   ansible.builtin.command: "./mythic-cli stop"
   args:
-    chdir: "{{ installation_path }}"
-  become: true
-  changed_when: false
+    chdir: "{{ installation_path }}"  # Execute the command in the installation directory
+  become: true  # Run as superuser
+  changed_when: false  # Do not mark this task as a change in the system
 
-- name: Stop Mythic docker-compose
-  ansible.builtin.command: "docker-compose down --remove-orphans"
+# Task 3: Stop all Docker containers related to Mythic
+# Uses docker-compose to stop and remove all containers, including orphans
+- name: Stop Mythic docker compose project
+  ansible.builtin.command: "docker compose down --remove-orphans"
   args:
-    chdir: "{{ installation_path }}"
-  become: true
-  changed_when: false
+    chdir: "{{ installation_path }}"  # Execute in the directory where docker-compose.yml is located
+  become: true  # Run as superuser
+  changed_when: false  # Do not mark this task as a change in the system
+
+# Change the owner and group of the /opt directory and all its contents to the current remote user
+- name: Change owner and group of /opt recursively to the remote user
+  ansible.builtin.file:
+    path: /opt
+    owner: "{{ ansible_user | default(lookup('env', 'USER')) }}"
+    group: "{{ ansible_user | default(lookup('env', 'USER')) }}"
+    recurse: true
+  become: true  # Run this task with superuser privileges
