@@ -47,10 +47,15 @@ RewriteEngine On
 # SSLCertificateFile /etc/ssl/certs/ssl-cert-snakeoil.pem
 # SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
 
-# Definir el objetivo de redirección
+# Define el objetivo de redirección (dominio señuelo)
+# Un ejemplo de como se veria en el archivo final: 
+# DEFINE REDIR_TARGET www.hackerhermanos.com
 DEFINE REDIR_TARGET {{ item.decoy_domain }}
 
-# Definir servidor(es) C2 Backend
+# Define los servidores C2 backend (Teamservers)
+# Esta sección configura las direcciones IP de los servidores C2 a los que se redirigirá el tráfico
+# Un ejemplo de como se veria en el archivo final:
+# DEFINE TeamServer_TS0 100.110.58.28
 {% if item.backend_teamservers is defined %}
 {% for backend_teamserver in item.backend_teamservers %}
 DEFINE {{ backend_teamserver.name }} {{ backend_teamserver.vpn_ip }}
@@ -62,7 +67,7 @@ DEFINE {{ backend_teamserver.name }} {{ backend_teamserver.vpn_ip }}
 # Si no contiene "/<URI_PATH_C2_TRAFFIC>/", el tráfico coincidirá con la RewriteRule para <DECOY_DOMAIN>.<TLD>.
 # Include /etc/apache2/redirect.rules
 
-# Especificar User Agents que serán bloqueados
+# Especifica los User Agents que serán bloqueados y redirigidos al dominio señuelo
 # Bloquea agentes de usuario comunes de bots para evitar accesos no deseados
 RewriteCond %{HTTP_USER_AGENT} (google|yandex|bingbot|Googlebot|bot|spider|simple|BBBike|wget|cloudfront|curl|Python|Wget|crawl|baidu|Lynx|xforce|HTTrack|Slackbot|netcraft|NetcraftSurveyAgent|Netcraft|shodan) [NC]
 RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
@@ -82,6 +87,9 @@ RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
 {% endif %}
 
 # Encabezados HTTP requeridos - Redirige al dominio señuelo si faltan
+# Un ejemplo de como se veria en el archivo final:
+# RewriteCond %{HTTP:Hacker-Hermanos-Is-The-Best} ^$
+# RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
 {% if item.required_http_header is defined %}
 {% for header in item.required_http_header %}
 RewriteCond %{HTTP:{{ header }}} ^$
@@ -90,6 +98,8 @@ RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
 {% endif %}
 
 # Definiciones de rutas URI personalizadas
+# Un ejemplo de como se veria en el archivo final:
+# Define hackerhermanos ^/hackerhermanos
 {% if item.uri_path_definitions is defined %}
 {% for uri in item.uri_path_definitions %}
 Define {{ uri.name }} ^/{{ uri.path }}
@@ -97,24 +107,29 @@ Define {{ uri.name }} ^/{{ uri.path }}
 {% endif %}
 
 # Condiciones de reescritura para filtrar y redirigir tráfico específico
+# Un ejemplo de como se veria en el archivo final:
+# RewriteCond %{REQUEST_URI} ${hackerhermanos}.*$
+# RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${TeamServer_TS0}:4443%{REQUEST_URI} [P,NE,L]
+# ProxyPassReverse ^ %{REQUEST_SCHEME}://${TeamServer_TS0}:4443%{REQUEST_URI} [P,NE]
 {% if item.rewrite_rule_filters is defined %}
 {% for c in item.rewrite_rule_filters %}
-RewriteCond %{REQUEST_URI} ^$({{ c.rewritefilter }}).*$
-RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${{{ c.backend_teamserver }}}:{{ c.backend_forward_port }}%{REQUEST_URI} [P,NE,L]
-ProxyPassReverse ^ %{REQUEST_SCHEME}://${{{ c.backend_teamserver }}}:{{ c.backend_forward_port }}%{REQUEST_URI} [P,NE]
+RewriteCond %{REQUEST_URI} ${{ '{' }}{{ c.rewritefilter }}{{ '}' }}.*$
+RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${{ '{' }}{{ c.backend_teamserver_bind_ip_variable }}{{ '}' }}:{{ c.backend_forward_port }}%{REQUEST_URI} [P,NE,L]
+ProxyPassReverse ^ %{REQUEST_SCHEME}://${{ '{' }}{{ c.backend_teamserver_bind_ip_variable }}{{ '}' }}:{{ c.backend_forward_port }}%{REQUEST_URI} [P,NE]
 {% endfor %}
 {% endif %}
 
-# Si las reglas anteriores no coinciden, enviar a <DECOY_DOMAIN>.<TLD> (por ejemplo, google.com)
+# Si ninguna de las reglas anteriores coincide, enviar a <DECOY_DOMAIN>.<TLD> (por ejemplo, google.com)
 RewriteRule ^(.*)$ %{REQUEST_SCHEME}://${REDIR_TARGET} [L,R=301]
 
-# Ubicación personalizada de registros
-# Define dónde se almacenarán los archivos de registro para este dominio
+# Ubicación personalizada para los archivos de registro
+# Un ejemplo de como se veria en el archivo final:
+# ErrorLog /var/www/html/test2.robertepimentel.com/logs/error.log
+# CustomLog /var/www/html/test2.robertepimentel.com/logs/access.log combined
 ErrorLog /var/www/html/{{ item.redirector_domain }}/logs/error.log
 CustomLog /var/www/html/{{ item.redirector_domain }}/logs/access.log combined
 
-# Definir directorio para almacenar registros y denegar acceso
-# Configuración de seguridad para proteger los archivos de registro
+# Define el directorio para almacenar logs y deniega el acceso a él por seguridad
 <Directory /var/www/html/{{ item.redirector_domain }}/logs>
         Order deny,allow
         Deny from all

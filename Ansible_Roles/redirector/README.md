@@ -9,112 +9,114 @@ Basado en [Tevora Blog](https://www.tevora.com/threat-blog/rtops-automating-redi
 Este rol permite configurar múltiples dominios y reglas de reescritura a través del diccionario `vhosts_dictionary` en el archivo `vars/main.yml`. La estructura del diccionario es la siguiente:
 
 ```yaml
-# Definición del diccionario de hosts virtuales (vhosts_dictionary)
-# Este diccionario contiene la configuración para cada dominio que el redirector manejará
+---
+# Archivo de variables para el Rol de Ansible 'redirector'
+# Este archivo define la configuración principal para un servidor redirector
+# que maneja el tráfico entre dominios y servidores backend
+
 vhosts_dictionary: [
     {
-        # Dominio principal del redirector
-        # Este es el dominio que el redirector utilizará para redirigir el tráfico
-        redirector_domain: '<REDIRECTOR_DOMAIN_TLD>',
-        
-        # Dominio señuelo
-        # Este dominio se mostrará a los visitantes no autorizados
-        decoy_domain: '<DECOY_DOMAIN_TLD>',
-        
+    # Configuración del primer hostname (servidor virtual)
+    # Esta sección define cómo se comportará el redirector para un dominio específico
+        # Dominio principal del redirector (ejemplo: ejemplo.com)
+        # Este es el dominio que los usuarios legítimos utilizarán para acceder al servicio.
+        # Asegúrate de que este dominio esté correctamente configurado en DNS.
+        # redirector_domain: 'test2.robertepimentel.com',
+        redirector_domain: '<REDIRECTOR_DOMAIN.TLD>',
+        # Dominio señuelo que se mostrará a los visitantes no autorizados
+        # Este dominio se utiliza para engañar a los usuarios no autorizados, 
+        # redirigiéndolos a un sitio diferente. Asegúrate de que este dominio no revele información sensible.
+        # decoy_domain: 'www.hackerhermanos.com',
+        decoy_domain: '<DECOY_DOMAIN.TLD>',
         # Puerto para tráfico HTTP no cifrado
-        # Especifica el puerto en el que el servidor escuchará las conexiones HTTP
+        # El tráfico en este puerto no está cifrado, lo que significa que es susceptible a intercepciones.
+        # Considera redirigir todo el tráfico HTTP a HTTPS para mayor seguridad.
+        # http_port: 80,
         http_port: <HTTP_PORT>,
-        
         # Puerto para tráfico HTTPS cifrado
-        # Especifica el puerto en el que el servidor escuchará las conexiones HTTPS
+        # HTTPS cifra el tráfico, protegiendo la información sensible durante la transmisión.
+        # Asegúrate de tener un certificado SSL válido para este puerto.
+        # https_port: 443,
         https_port: <HTTPS_PORT>,
-        
-        # Firma del servidor
-        # Esta es la firma que el servidor mostrará en las respuestas HTTP
+        # Firma del servidor que se mostrará en las respuestas HTTP
+        # La firma del servidor puede revelar información sobre el software y la versión que estás usando.
+        # Considera ocultar o modificar esta firma para evitar que los atacantes obtengan información útil.
+        # server_signature: "Microsoft-IIS/10.0",
         server_signature: "<SERVER_SIGNATURE>",
-        
-        # Lista de servidores backend
-        # Estos son los servidores que recibirán el tráfico redirigido
+        # Lista de servidores backend (TeamServers) que recibirán el tráfico redirigido
+        # Estos son los servidores que realmente procesarán las solicitudes después de ser redirigidas.
+        # Asegúrate de que estos servidores estén protegidos y que solo acepten tráfico del redirector.
         backend_teamservers: [
             {
-                # Nombre del servidor de producción
-                # Identificador del servidor de producción en el backend
+                # Servidor de producción
+                # Este es el servidor principal que maneja el tráfico en vivo.
+                # Asegúrate de que esté bien protegido y monitoreado.
+                # name: 'TeamServer_TS0',
+                # vpn_ip: '100.110.58.28'
                 name: '<Prod_C2_TeamServer_TS0>',
-                
-                # Dirección IP del servidor de producción
-                # IP del servidor de producción en la red VPN
                 vpn_ip: '<PROD_C2_VPN_IP>'
             },
             {
-                # Nombre del servidor de desarrollo
-                # Identificador del servidor de desarrollo en el backend
+                # Servidor de desarrollo
+                # Este servidor se utiliza para pruebas y desarrollo.
+                # Asegúrate de que no esté expuesto a Internet y que solo sea accesible desde redes seguras.
                 name: '<Dev_C2_TeamServer_TS1>',
-                
-                # Dirección IP del servidor de desarrollo
-                # IP del servidor de desarrollo en la red VPN
                 vpn_ip: '<DEV_C2_VPN_IP>'
             }
         ],
-        
-        # Cabeceras HTTP requeridas
-        # Lista de cabeceras HTTP que deben estar presentes en las peticiones legítimas
+        # Cabeceras HTTP requeridas para autenticar las peticiones legítimas
+        # Estas cabeceras se utilizan para verificar que las solicitudes provienen de clientes autorizados.
+        # Asegúrate de que estas cabeceras sean difíciles de adivinar y que se mantengan en secreto.
         required_http_header: [
+            # 'Hacker-Hermanos-Is-The-Best'
             '<REQUIRED_HTTP_HEADER_1>',
             '<REQUIRED_HTTP_HEADER_2>',
+            # '<ADDITIONAL_HEADER>' # Añade cabeceras adicionales según sea necesario
         ],
-        
-        # Definiciones de rutas URI
-        # Lista de rutas URI que el redirector procesará
+        # Definiciones de rutas URI que el redirector procesará
+        # Estas son las rutas específicas que el redirector manejará.
+        # Asegúrate de que las rutas no expongan información sensible o funcionalidades no deseadas.
         uri_path_definitions: [
             {
-                # Nombre de la primera ruta URI
-                # Identificador de la primera ruta URI
+                # Primera definición de ruta
+                # Define una ruta específica que el redirector debe manejar.
+                # name: 'hackerhermanos',
+                # path: 'hackerhermanos'
                 name: '<URI_PATH_NAME_1>',
-                
-                # Ruta de la primera URI
-                # Especifica la ruta de la primera URI
                 path: '<URI_PATH_1>'
             },
             {
-                # Nombre de la segunda ruta URI
-                # Identificador de la segunda ruta URI
+                # Segunda definición de ruta
+                # Otra ruta que el redirector debe manejar.
                 name: '<URI_PATH_NAME_2>',
-                
-                # Ruta de la segunda URI
-                # Especifica la ruta de la segunda URI
                 path: '<URI_PATH_2>'
             }
+            # Añade más definiciones de rutas URI según sea necesario
         ],
-        
-        # Filtros de reglas de reescritura
-        # Lista de reglas de reescritura que definen cómo se redirigirá el tráfico
+        # Reglas de reescritura para dirigir el tráfico a los servidores backend
+        # Estas reglas determinan cómo se redirige el tráfico a los servidores backend.
+        # Asegúrate de que las reglas sean precisas para evitar redirecciones incorrectas.
         rewrite_rule_filters: [
             {
-                # Filtro de reescritura para la primera regla
-                # Define el patrón de reescritura para la primera regla
+                # Regla para el servidor de producción
+                # Esta regla redirige el tráfico al servidor de producción.
+                # Asegúrate de que el puerto y la IP sean correctos.
+                # rewritefilter: 'hackerhermanos',
+                # backend_forward_port: '4443',
+                # backend_teamserver_bind_ip_variable: 'TeamServer_TS0'
                 rewritefilter: '<REWRITE_FILTER_1>',
-                
-                # Puerto de reenvío del backend
-                # Especifica el puerto en el que el backend recibirá el tráfico redirigido
                 backend_forward_port: '<BACKEND_PORT_1>',
-                
-                # Servidor backend
-                # Especifica el servidor backend al que se redirigirá el tráfico
-                backend_teamserver: '${PROD_C2_VPN_IP}'
+                backend_teamserver_bind_ip_variable: '<Prod_C2_TeamServer_TS0>'
             },
             {
-                # Filtro de reescritura para la segunda regla
-                # Define el patrón de reescritura para la segunda regla
+                # Regla para el servidor de desarrollo
+                # Esta regla redirige el tráfico al servidor de desarrollo.
+                # Asegúrate de que el puerto y la IP sean correctos.
                 rewritefilter: '<REWRITE_FILTER_2>',
-                
-                # Puerto de reenvío del backend
-                # Especifica el puerto en el que el backend recibirá el tráfico redirigido
                 backend_forward_port: '<BACKEND_PORT_2>',
-                
-                # Servidor backend
-                # Especifica el servidor backend al que se redirigirá el tráfico
-                backend_teamserver: '${DEV_C2_VPN_IP}'
+                backend_teamserver_bind_ip_variable: '<DEV_C2_VPN_IP>'
             }
+            # Añade más filtros según sea necesario
         ]
     }
 ]
@@ -127,40 +129,78 @@ Para añadir un número arbitrario de reglas de reescritura (rewrite rules), sim
 Aquí se muestra cómo puedes añadir más reglas de reescritura al array `rewrite_rule_filters`. Cada objeto en el array representa una regla de reescritura que define cómo se debe redirigir el tráfico. Asegúrate de seguir la estructura especificada para cada objeto.
 
 ```yaml
-rewrite_rule_filters: [
+---
+vhosts_dictionary: [
     {
-        # Filtro de reescritura para una ruta específica
-        rewritefilter: '/ruta/especifica/',
-        # Puerto de reenvío del backend
-        backend_forward_port: '8080',
-        # Servidor backend al que se redirigirá el tráfico
-        backend_teamserver: '${PROD_C2_VPN_IP}'
-    },
-    {
-        # Filtro de reescritura para otra ruta
-        rewritefilter: '/otra/ruta/',
-        # Puerto de reenvío del backend
-        backend_forward_port: '8081',
-        # Servidor backend al que se redirigirá el tráfico
-        backend_teamserver: '${DEV_C2_VPN_IP}'
-    },
-    {
-        # Filtro de reescritura para una tercera ruta
-        rewritefilter: '/tercera/ruta/',
-        # Puerto de reenvío del backend
-        backend_forward_port: '8082',
-        # Servidor backend al que se redirigirá el tráfico
-        backend_teamserver: '${STAGING_C2_VPN_IP}'
-    },
-    {
-        # Filtro de reescritura para una cuarta ruta
-        rewritefilter: '/cuarta/ruta/',
-        # Puerto de reenvío del backend
-        backend_forward_port: '8083',
-        # Servidor backend al que se redirigirá el tráfico
-        backend_teamserver: '${TEST_C2_VPN_IP}'
+        redirector_domain: 'test2.robertepimentel.com',
+        decoy_domain: 'www.hackerhermanos.com',
+        http_port: 80,
+        https_port: 443,
+        server_signature: "Microsoft-IIS/10.0",
+        backend_teamservers: [
+            {
+                name: 'TeamServer_TS0',
+                vpn_ip: '100.110.58.28'
+            },
+            {
+                name: 'TeamServer_TS1', 
+                vpn_ip: '100.110.58.29'
+            },
+            {
+                name: 'TeamServer_TS2',
+                vpn_ip: '100.110.58.30'
+            },
+            {
+                name: 'TeamServer_TS3',
+                vpn_ip: '100.110.58.31'
+            },
+        ], 
+        required_http_header: [
+            'Hacker-Hermanos-Is-The-Best'
+        ],
+        uri_path_definitions: [
+            {
+                name: 'hackerhermanos',
+                path: 'hackerhermanos'
+            },
+            {
+                name: 'hackerhermanos2', 
+                path: 'hackerhermanos2'
+            },
+            {
+                name: 'hackerhermanos3',
+                path: 'hackerhermanos3'
+            },
+            {
+                name: 'hackerhermanos4',
+                path: 'hackerhermanos4'
+            }
+        ],
+        rewrite_rule_filters: [
+            {
+                rewritefilter: 'hackerhermanos',
+                backend_forward_port: '4443',
+                backend_teamserver_bind_ip_variable: 'TeamServer_TS0'
+            },
+            {
+                rewritefilter: 'hackerhermanos2',
+                backend_forward_port: '4444',
+                backend_teamserver_bind_ip_variable: 'TeamServer_TS1'
+            },
+            {
+                rewritefilter: 'hackerhermanos3',
+                backend_forward_port: '4445',
+                backend_teamserver_bind_ip_variable: 'TeamServer_TS2'
+            },
+            {
+                rewritefilter: 'hackerhermanos4',
+                backend_forward_port: '4446',
+                backend_teamserver_bind_ip_variable: 'TeamServer_TS3'
+            }
+        ]
     }
 ]
+
 ```
 
 ## Configuración de múltiples dominios
@@ -191,6 +231,11 @@ vhosts_dictionary: [
                 # Servidor de desarrollo
                 name: 'Dev_C2_TeamServer_TS1',
                 vpn_ip: '10.0.0.2'
+            },
+            {
+                # Servidor de integración
+                name: 'Staging_C2_TeamServer_TS2',
+                vpn_ip: '10.0.0.3'
             }
         ],
         # Cabeceras HTTP requeridas para autenticar las peticiones legítimas
@@ -209,6 +254,11 @@ vhosts_dictionary: [
                 # Segunda definición de ruta
                 name: 'Path2',
                 path: '/ruta2'
+            },
+            {
+                # Tercera definición de ruta
+                name: 'Path3',
+                path: '/ruta3'
             }
         ],
         # Filtros de reglas de reescritura para dirigir el tráfico a los servidores backend
@@ -228,6 +278,14 @@ vhosts_dictionary: [
                 backend_forward_port: '8081',
                 # Servidor backend al que se redirigirá el tráfico
                 backend_teamserver: '10.0.0.2'
+            },
+            {
+                # Filtro de reescritura para otra ruta
+                rewritefilter: '/tercera/ruta/',
+                # Puerto de reenvío del backend
+                backend_forward_port: '8082',
+                # Servidor backend al que se redirigirá el tráfico
+                backend_teamserver: '10.0.0.3'
             }
         ]
     },
@@ -280,7 +338,7 @@ vhosts_dictionary: [
                 # Puerto de reenvío del backend
                 backend_forward_port: '8080',
                 # Servidor backend al que se redirigirá el tráfico
-                backend_teamserver: '${PROD_C2_VPN_IP}'
+                backend_teamserver: '<PROD_C2_VPN_IP>'
             },
             {
                 # Filtro de reescritura para otra ruta
@@ -288,15 +346,7 @@ vhosts_dictionary: [
                 # Puerto de reenvío del backend
                 backend_forward_port: '8081',
                 # Servidor backend al que se redirigirá el tráfico
-                backend_teamserver: '${DEV_C2_VPN_IP}'
-            },
-            {
-                # Filtro de reescritura para una tercera ruta
-                rewritefilter: '/tercera/ruta/',
-                # Puerto de reenvío del backend
-                backend_forward_port: '8082',
-                # Servidor backend al que se redirigirá el tráfico
-                backend_teamserver: '${STAGING_C2_VPN_IP}'
+                backend_teamserver: '<DEV_C2_VPN_IP>'
             }
         ]
     }

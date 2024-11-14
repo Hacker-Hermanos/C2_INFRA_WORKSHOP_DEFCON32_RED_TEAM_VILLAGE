@@ -37,7 +37,7 @@ vhosts_dictionary: [
                 # Este es el servidor principal que maneja el tráfico en vivo.
                 # Asegúrate de que esté bien protegido y monitoreado.
                 name: 'TeamServer_TS0',
-                vpn_ip: '100.119.62.116'
+                vpn_ip: '100.110.58.28'
             },
         ],  # Add a comma here to separate the list items
         # Cabeceras HTTP requeridas para autenticar las peticiones legítimas
@@ -69,7 +69,7 @@ vhosts_dictionary: [
                 # Asegúrate de que el puerto y la IP sean correctos.
                 rewritefilter: 'hackerhermanos',
                 backend_forward_port: '4443',
-                backend_teamserver: 'TeamServer_TS0'
+                backend_teamserver_bind_ip_variable: 'TeamServer_TS0'
             }
             # Añade más filtros según sea necesario
         ]

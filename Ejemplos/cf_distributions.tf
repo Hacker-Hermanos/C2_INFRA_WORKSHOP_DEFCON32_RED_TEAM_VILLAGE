@@ -64,8 +64,8 @@ resource "aws_cloudfront_distribution" "test_robertepimentel_com_cdn_1" {
     geo_restriction {
       # Solo permite acceso desde ubicaciones específicas
       restriction_type = "whitelist"
-      # Lista de países permitidos (usando códigos de país)
-      locations = ["US"]
+      # Lista de países permitidos (usando códigos de país) en formato ISO 3166-1 alpha-2 (https://www.iso.org/obp/ui/#search)
+      locations = ["PR"]
     }
   }
 

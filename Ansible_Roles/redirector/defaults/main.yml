@@ -8,10 +8,10 @@ vhosts_dictionary: [
     # Un host virtual permite manejar múltiples dominios en un solo servidor
         
         # Dominio principal que manejará el redirector
-        redirector_domain: '<REDIRECTOR_DOMAIN_TLD>',
+        redirector_domain: '<REDIRECTOR_DOMAIN.TLD>',
         
         # Dominio señuelo que se mostrará para enmascarar el verdadero propósito
-        decoy_domain: '<DECOY_DOMAIN_TLD>',
+        decoy_domain: '<DECOY_DOMAIN.TLD>',
         
         # Puerto para tráfico HTTP no cifrado
         http_port: <HTTP_PORT>,

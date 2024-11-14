@@ -2,16 +2,25 @@
 
 ¡Vamos a configurar nuestro Redirector C2! Sigue estos pasos emocionantes:
 
-1. Consigue un dominio o usa uno existente para configurar un registro A con la IP de tu redirector.
-2. Configura la VPN del Redirector C2 para las comunicaciones entre el servidor C2 y el redirector.
-3. Configura el Redirector C2 con `apache2`:
-   - Usa nuestro rol personalizado de Ansible basado en el de tevora threat:
+1. Consigue un dominio o usa uno existente para configurar un registro A con la IP de tu redirector. Utiliza cualquier registrador de DNS que prefieras. Aqui tienes algunos ejemplos:
+   - [Google Domains](https://domains.google.com/)
+   - [Cloudflare](https://dash.cloudflare.com/)
+   - [Route 53](https://aws.amazon.com/route53/)
+   - [NameCheap](https://www.namecheap.com/support/knowledgebase/article.aspx/10072/35/how-to-register-a-domain-name/)
+   - [porkbun](https://porkbun.com/knowledgebase/getting-started/how-to-register-a-domain-name)
+   - [Expired Domains](https://www.expireddomains.net/)
 
-```Bash
-ansible-playbook /path/to/DEFCON32_RT_Village_workshop/Exercise_3/ansible/C2_Redirector_playbook.yml -i '<REDIRECTOR_IP>, ' --private-key /path/to/DEFCON32_RT_Village_workshop/Exercise_1/SSH-Key-*.pem --extra-vars 'kali'
+2. Configura la VPN del Redirector C2 para las comunicaciones entre el servidor C2 y el redirector. Para este paso vamos a utilizar el rol de Ansible `tailscale_kali` que ya esta instalado en el servidor C2. Este rol lo ejecutaremos a traves del playbook `/ruta/hacia/el/repositorio/C2_INFRA_WORKSHOP_DEFCON32_RED_TEAM_VILLAGE/Ejercicio_3/ansible/C2_Redirector_playbook.yml`.
+
+3. Configura el Redirector C2 con `apache2`. Utilizaremos el rol de Ansible (basado en el de tevora threat). Este role es el de `redirector` que esta en `/ruta/hacia/el/repositorio/C2_INFRA_WORKSHOP_DEFCON32_RED_TEAM_VILLAGE/Ansible_Roles/redirector`. Si quieres leer mas acerca del rol original en el que esta basado el nuestro, puedes verlo aqui: [tevora threat](https://github.com/tevora-threat/rt_redirectors) y [aqui esta la entrada del blog que escribieron originalmente](https://www.tevora.com/threat-blog/rtops-automating-redirector-deployment-with-ansible/).
+
+```bash
+cd /ruta/hacia/el/repositorio/C2_INFRA_WORKSHOP_DEFCON32_RED_TEAM_VILLAGE/Ejercicio_3/ansible
+
+ansible-playbook /ruta/hacia/el/repositorio/C2_INFRA_WORKSHOP_DEFCON32_RED_TEAM_VILLAGE/Ejercicio_3/ansible/C2_Redirector_playbook.yml -i '<REDIRECTOR_IP>, ' --private-key /ruta/hacia/el/repositorio/C2_INFRA_WORKSHOP_DEFCON32_RED_TEAM_VILLAGE/Ejercicio_1/SSH-Key-name.pem --extra-vars 'kali'
 ```
 
-   - Redirige el tráfico C2 a la interfaz del túnel VPN del servidor C2.
+Una vez la instalacion de los roles en este playbook este completa, nuestro redirector de C2 esta enviando el tráfico C2 a la interfaz del túnel VPN del servidor C2 y el trafico que provenga de analistas de amenazas, escaneres automatizados, etc. sera(n) redirigido(s) al dominio señuelo.
 
 4. ¡Refuerza tu Redirector C2!:
    - Implementa rutas URI para los listeners.
